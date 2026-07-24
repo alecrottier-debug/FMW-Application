@@ -41,3 +41,7 @@ obj/
 *.env
 .env.*
 local.settings.json
+
+## App Store Connect API key + local beta secrets — NEVER commit
+*.p8
+scripts/beta.env

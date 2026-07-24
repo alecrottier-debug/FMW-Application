@@ -30,6 +30,9 @@ DEST="upload"; [ "$MODE" = "export" ] && DEST="export"
 
 mkdir -p build
 
+# Load local secrets (scripts/beta.env is git-ignored — safe place to paste your Issuer ID).
+[ -f scripts/beta.env ] && . scripts/beta.env
+
 echo "▸ Regenerating project…"
 xcodegen generate >/dev/null
 
@@ -53,9 +56,13 @@ cat > "$PLIST" <<PL
 PL
 
 if [ "$DEST" = "upload" ]; then
-  : "${ASC_KEY_ID:?set ASC_KEY_ID (App Store Connect API key id)}"
-  : "${ASC_ISSUER_ID:?set ASC_ISSUER_ID}"
-  : "${ASC_KEY_PATH:?set ASC_KEY_PATH (path to AuthKey_*.p8)}"
+  # Auto-find the key you dropped in scripts/private/ and derive the Key ID from its filename.
+  ASC_KEY_PATH="${ASC_KEY_PATH:-$(ls scripts/private/AuthKey_*.p8 2>/dev/null | head -1 || true)}"
+  if [ -n "${ASC_KEY_PATH:-}" ] && [ -z "${ASC_KEY_ID:-}" ]; then
+    ASC_KEY_ID="$(basename "$ASC_KEY_PATH" .p8 | sed 's/^AuthKey_//')"
+  fi
+  : "${ASC_KEY_PATH:?No API key. Drop AuthKey_XXXX.p8 in scripts/private/ (see its README).}"
+  : "${ASC_ISSUER_ID:?Set ASC_ISSUER_ID in scripts/beta.env (copy scripts/beta.env.example).}"
   echo "▸ Exporting + uploading to TestFlight…"
   xcodebuild -exportArchive -archivePath "$ARCHIVE" \
     -exportOptionsPlist "$PLIST" -exportPath "$EXPORT_DIR" -allowProvisioningUpdates \
