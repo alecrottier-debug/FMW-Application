@@ -57,7 +57,7 @@ PL
 
 if [ "$DEST" = "upload" ]; then
   # Auto-find the key you dropped in scripts/private/ and derive the Key ID from its filename.
-  ASC_KEY_PATH="${ASC_KEY_PATH:-$(ls scripts/private/AuthKey_*.p8 2>/dev/null | head -1 || true)}"
+  ASC_KEY_PATH="${ASC_KEY_PATH:-$(ls -t scripts/private/AuthKey_*.p8 2>/dev/null | head -1 || true)}"
   if [ -n "${ASC_KEY_PATH:-}" ] && [ -z "${ASC_KEY_ID:-}" ]; then
     ASC_KEY_ID="$(basename "$ASC_KEY_PATH" .p8 | sed 's/^AuthKey_//')"
   fi
