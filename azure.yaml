@@ -1,0 +1,26 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/Azure/azure-dev/main/schemas/v1.0/azure.yaml.json
+# azd project for the Fox Mill Woods backend.
+# Provision + deploy with:  azd up   (Claude Code: use azd for deployments, never `az`.)
+name: fox-mill-woods
+metadata:
+  template: fox-mill-woods@0.1
+
+infra:
+  provider: bicep
+  path: infra
+  module: main
+
+services:
+  api:
+    project: ./api # Azure Functions (REST API + Stripe webhook)
+    language: ts # TypeScript, v4 programming model
+    host: function
+
+# Infra (Bicep) lives in ./infra and provisions:
+#   - Azure SQL (serverless)      : app data (spec §5 schema)
+#   - Storage account + container : receipt images (Blob, private) + Function package
+#   - Key Vault                   : Stripe + IdP secrets (set outside source control)
+#   - Function App (Flex/FC1)     : the API above, system-assigned identity
+#   - Log Analytics + App Insights: logs / telemetry
+# Entra External ID (Apple/Google) is configured once in the tenant,
+# with client secrets stored in Key Vault (not in this repo).

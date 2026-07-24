@@ -23,6 +23,13 @@ build/
 Packages/
 Package.resolved
 
+## Node / Azure Functions (api/)
+node_modules/
+dist/
+*.tsbuildinfo
+bin/
+obj/
+
 ## The generated .xcodeproj IS committed (see CLAUDE.md "commit a minimal
 ## project.pbxproj"); project.yml remains the source of truth. Do not hand-edit
 ## the .pbxproj — run `xcodegen generate` after adding files.

@@ -1,0 +1,22 @@
+{
+  "name": "fox-mill-woods-api",
+  "version": "0.1.0",
+  "description": "Fox Mill Woods backend — Azure Functions (TypeScript, v4 programming model)",
+  "main": "dist/functions/*.js",
+  "scripts": {
+    "clean": "rimraf dist",
+    "build": "tsc",
+    "watch": "tsc -w",
+    "prestart": "npm run clean && npm run build",
+    "start": "func start",
+    "test": "echo \"(no api tests yet)\" && exit 0"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "rimraf": "^5.0.7",
+    "typescript": "^5.5.4"
+  }
+}
