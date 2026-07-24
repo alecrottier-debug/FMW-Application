@@ -1,11 +1,11 @@
 import Foundation
 import AuthenticationServices
-import CryptoKit
 import UIKit
+@preconcurrency import GoogleSignIn
 
-/// Sign-in via Entra External ID (OAuth 2.0 Authorization Code + PKCE, brokered to
-/// Apple/Google). The app never stores a password; the access token lives in the
-/// Keychain and is validated server-side. Stays disabled until Entra is configured.
+/// Native **Sign in with Apple** + **Google Sign-In**. The provider gives an identity
+/// token; we send it to `/auth/session`, the API verifies it and returns our own
+/// session token, which we store in the Keychain and use for every request.
 @MainActor
 @Observable
 final class AuthService {
@@ -16,159 +16,172 @@ final class AuthService {
     var isSignedIn: Bool { currentUser != nil }
 
     private let keychain = KeychainStore()
-    private let presenter = WebAuthPresenter()
+    private var appleCoordinator: AppleSignInCoordinator?
 
     private var api: APIClient {
-        let keychain = keychain // capture the value type, not self (keeps APIClient Sendable)
+        let keychain = keychain
         return APIClient(baseURL: AppConfig.apiBaseURL, tokenProvider: { keychain.token })
     }
 
-    /// On launch, restore the session if a token is present.
+    /// Restore the session on launch.
     func restore() async {
         guard keychain.token != nil else { return }
         await loadMe()
     }
 
-    /// `idpHint` = "apple" or "google" (Entra domain_hint), or nil to let Entra choose.
-    func signIn(idpHint: String?) async {
-        guard AppConfig.isAuthConfigured else {
-            errorMessage = "Sign-in isn’t configured yet — set your Entra values (see the go-live checklist)."
+    // MARK: - Sign in with Apple
+
+    func signInWithApple() async {
+        isLoading = true
+        errorMessage = nil
+        defer { isLoading = false }
+        do {
+            let (idToken, name) = try await requestAppleCredential()
+            try await exchange(provider: "apple", idToken: idToken, name: name)
+        } catch let error as ASAuthorizationError where error.code == .canceled {
+            // user dismissed — not an error
+        } catch {
+            setError(error)
+        }
+    }
+
+    // MARK: - Google Sign-In
+
+    func signInWithGoogle() async {
+        guard let clientID = AppConfig.googleClientID else {
+            errorMessage = "Google sign-in isn’t configured yet."
+            return
+        }
+        guard let presenter = Self.topViewController() else {
+            errorMessage = "Couldn’t find a view controller to present from."
             return
         }
         isLoading = true
         errorMessage = nil
         defer { isLoading = false }
-
         do {
-            let verifier = Self.randomURLSafe(byteCount: 48)
-            let challenge = Self.codeChallenge(for: verifier)
-            let code = try await authorize(challenge: challenge, idpHint: idpHint)
-            let token = try await exchange(code: code, verifier: verifier)
-            keychain.token = token
-            await loadMe()
-        } catch let error as ASWebAuthenticationSessionError where error.code == .canceledLogin {
-            // user dismissed the sheet — not an error
+            GIDSignIn.sharedInstance.configuration = GIDConfiguration(clientID: clientID)
+            let result = try await GIDSignIn.sharedInstance.signIn(withPresenting: presenter)
+            guard let idToken = result.user.idToken?.tokenString else { throw AuthError.noIdentityToken }
+            try await exchange(provider: "google", idToken: idToken, name: result.user.profile?.name)
+        } catch let error as NSError where error.code == GIDSignInError.canceled.rawValue {
+            // user cancelled
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            setError(error)
         }
     }
 
     func signOut() {
         keychain.token = nil
         currentUser = nil
+        GIDSignIn.sharedInstance.signOut()
+    }
+
+    // MARK: - Session exchange
+
+    private func exchange(provider: String, idToken: String, name: String?) async throws {
+        let session: SessionResponse = try await api.post(
+            "auth/session",
+            body: SessionRequest(provider: provider, idToken: idToken, name: name)
+        )
+        keychain.token = session.token
+        currentUser = session.user
     }
 
     private func loadMe() async {
         do {
             currentUser = try await api.get("users/me")
         } catch {
-            errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            setError(error)
         }
     }
 
-    // MARK: - OAuth (Authorization Code + PKCE)
+    private func setError(_ error: Error) {
+        errorMessage = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+    }
 
-    private func authorize(challenge: String, idpHint: String?) async throws -> String {
-        var components = URLComponents(string: AppConfig.entraAuthorizeURL)!
-        var items = [
-            URLQueryItem(name: "client_id", value: AppConfig.entraClientID),
-            URLQueryItem(name: "response_type", value: "code"),
-            URLQueryItem(name: "redirect_uri", value: AppConfig.entraRedirectURI),
-            URLQueryItem(name: "scope", value: AppConfig.entraScopes),
-            URLQueryItem(name: "code_challenge", value: challenge),
-            URLQueryItem(name: "code_challenge_method", value: "S256"),
-        ]
-        if let idpHint { items.append(URLQueryItem(name: "domain_hint", value: idpHint)) }
-        components.queryItems = items
-
-        let callbackURL: URL = try await withCheckedThrowingContinuation { continuation in
-            let session = ASWebAuthenticationSession(
-                url: components.url!,
-                callbackURLScheme: AppConfig.callbackScheme
-            ) { url, error in
-                if let url {
-                    continuation.resume(returning: url)
-                } else {
-                    continuation.resume(throwing: error ?? URLError(.userCancelledAuthentication))
-                }
-            }
-            session.presentationContextProvider = presenter
-            session.start()
+    private func requestAppleCredential() async throws -> (idToken: String, name: String?) {
+        try await withCheckedThrowingContinuation { continuation in
+            let request = ASAuthorizationAppleIDProvider().createRequest()
+            request.requestedScopes = [.fullName, .email]
+            let controller = ASAuthorizationController(authorizationRequests: [request])
+            let coordinator = AppleSignInCoordinator(continuation: continuation)
+            appleCoordinator = coordinator
+            controller.delegate = coordinator
+            controller.presentationContextProvider = coordinator
+            controller.performRequests()
         }
+    }
 
-        guard let code = URLComponents(url: callbackURL, resolvingAgainstBaseURL: false)?
-            .queryItems?.first(where: { $0.name == "code" })?.value
+    static func topViewController() -> UIViewController? {
+        let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
+        var top = scenes.flatMap(\.windows).first(where: \.isKeyWindow)?.rootViewController
+        while let presented = top?.presentedViewController { top = presented }
+        return top
+    }
+}
+
+enum AuthError: LocalizedError {
+    case noIdentityToken
+    var errorDescription: String? { "No identity token was returned by the provider." }
+}
+
+struct SessionRequest: Encodable, Sendable {
+    let provider: String
+    let idToken: String
+    let name: String?
+}
+
+struct SessionResponse: Decodable {
+    let token: String
+    let user: APIUser
+}
+
+/// Bridges ASAuthorizationController's delegate callbacks to an async continuation.
+final class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate,
+    ASAuthorizationControllerPresentationContextProviding
+{
+    private let continuation: CheckedContinuation<(idToken: String, name: String?), Error>
+    private var finished = false
+
+    init(continuation: CheckedContinuation<(idToken: String, name: String?), Error>) {
+        self.continuation = continuation
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential,
+              let tokenData = credential.identityToken,
+              let token = String(data: tokenData, encoding: .utf8)
         else {
-            throw APIError.http(400, "No authorization code in the callback")
+            finish(.failure(AuthError.noIdentityToken))
+            return
         }
-        return code
+        let name = [credential.fullName?.givenName, credential.fullName?.familyName]
+            .compactMap { $0 }
+            .joined(separator: " ")
+        finish(.success((token, name.isEmpty ? nil : name)))
     }
 
-    private func exchange(code: String, verifier: String) async throws -> String {
-        var request = URLRequest(url: URL(string: AppConfig.entraTokenURL)!)
-        request.httpMethod = "POST"
-        request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
-        let form = [
-            "client_id": AppConfig.entraClientID,
-            "grant_type": "authorization_code",
-            "code": code,
-            "redirect_uri": AppConfig.entraRedirectURI,
-            "code_verifier": verifier,
-            "scope": AppConfig.entraScopes,
-        ]
-        request.httpBody = form
-            .map { "\($0.key)=\($0.value.addingPercentEncoding(withAllowedCharacters: .urlQueryValueAllowed) ?? "")" }
-            .joined(separator: "&")
-            .data(using: .utf8)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let http = response as? HTTPURLResponse, (200..<300).contains(http.statusCode) else {
-            let status = (response as? HTTPURLResponse)?.statusCode ?? 0
-            throw APIError.http(status, String(data: data, encoding: .utf8) ?? "")
-        }
-        return try JSONDecoder().decode(TokenResponse.self, from: data).access_token
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        finish(.failure(error))
     }
 
-    // MARK: - PKCE
-
-    private static func randomURLSafe(byteCount: Int) -> String {
-        var bytes = [UInt8](repeating: 0, count: byteCount)
-        _ = SecRandomCopyBytes(kSecRandomDefault, byteCount, &bytes)
-        return Data(bytes).base64URLEncodedString()
-    }
-
-    private static func codeChallenge(for verifier: String) -> String {
-        Data(SHA256.hash(data: Data(verifier.utf8))).base64URLEncodedString()
-    }
-}
-
-private struct TokenResponse: Decodable {
-    let access_token: String
-}
-
-private extension Data {
-    func base64URLEncodedString() -> String {
-        base64EncodedString()
-            .replacingOccurrences(of: "+", with: "-")
-            .replacingOccurrences(of: "/", with: "_")
-            .replacingOccurrences(of: "=", with: "")
-    }
-}
-
-private extension CharacterSet {
-    static let urlQueryValueAllowed: CharacterSet = {
-        var set = CharacterSet.alphanumerics
-        set.insert(charactersIn: "-._~")
-        return set
-    }()
-}
-
-/// Presents the ASWebAuthenticationSession from the key window.
-final class WebAuthPresenter: NSObject, ASWebAuthenticationPresentationContextProviding {
-    func presentationAnchor(for session: ASWebAuthenticationSession) -> ASPresentationAnchor {
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
         MainActor.assumeIsolated {
             let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
             return scenes.flatMap(\.windows).first(where: \.isKeyWindow) ?? ASPresentationAnchor()
         }
+    }
+
+    private func finish(_ result: Result<(idToken: String, name: String?), Error>) {
+        guard !finished else { return }
+        finished = true
+        continuation.resume(with: result)
     }
 }

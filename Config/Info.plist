@@ -24,22 +24,16 @@
 	<array>
 		<dict>
 			<key>CFBundleURLName</key>
-			<string>com.foxmillwoods.app.auth</string>
+			<string>com.foxmillwoods.app.google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>foxmillwoods</string>
+				<string>com.googleusercontent.apps.REPLACE-WITH-GOOGLE-REVERSED-CLIENT-ID</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
-	<key>ENTRA_AUTHORIZE_URL</key>
-	<string></string>
-	<key>ENTRA_CLIENT_ID</key>
-	<string></string>
-	<key>ENTRA_REDIRECT_URI</key>
-	<string>foxmillwoods://auth</string>
-	<key>ENTRA_TOKEN_URL</key>
+	<key>GOOGLE_CLIENT_ID</key>
 	<string></string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>

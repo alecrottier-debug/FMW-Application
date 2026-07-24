@@ -1,66 +1,87 @@
 import { HttpRequest } from "@azure/functions";
-import { createRemoteJWKSet, jwtVerify } from "jose";
+import { createRemoteJWKSet, jwtVerify, SignJWT } from "jose";
 import { getPool, sql } from "./db";
 import { HttpError } from "./http";
 import { Role, User } from "./types";
 
-// Entra External ID token validation (issuer / audience / signature via JWKS).
-const issuer = process.env.ENTRA_ISSUER;
-const audience = process.env.ENTRA_AUDIENCE;
-const jwksUri = process.env.ENTRA_JWKS_URI;
+// Native Sign in with Apple + Google Sign-In. The app validates nothing itself; it
+// sends the provider's identity token to /auth/session, we verify it here against
+// the provider's public keys, then issue OUR OWN session JWT that the app uses for
+// every request (validated by requireUser). No passwords, no Entra broker.
 
-let jwks: ReturnType<typeof createRemoteJWKSet> | null = null;
-function getJwks() {
-  if (!jwksUri) throw new HttpError(500, "ENTRA_JWKS_URI is not configured");
-  if (!jwks) jwks = createRemoteJWKSet(new URL(jwksUri));
-  return jwks;
+const appleJwks = createRemoteJWKSet(new URL("https://appleid.apple.com/auth/keys"));
+const googleJwks = createRemoteJWKSet(new URL("https://www.googleapis.com/oauth2/v3/certs"));
+
+// Apple: aud = the app's bundle id. Google: aud = the iOS OAuth client id.
+const APPLE_AUD = process.env.APPLE_BUNDLE_ID;
+const GOOGLE_AUD = process.env.GOOGLE_CLIENT_ID;
+
+function appSecret(): Uint8Array {
+  const secret = process.env.APP_JWT_SECRET;
+  if (!secret) throw new HttpError(500, "APP_JWT_SECRET is not configured");
+  return new TextEncoder().encode(secret);
 }
 
-interface Claims {
+interface ProviderClaims {
   sub: string;
   email?: string;
-  name?: string;
-  preferred_username?: string;
 }
 
-/** Validate the bearer token and return the mapped User (creating a pending one on first sign-in). */
+/** Validate a provider id token, upsert the user, and return an app session JWT. */
+export async function issueSession(
+  provider: string,
+  idToken: string,
+  name?: string
+): Promise<{ token: string; user: User }> {
+  let claims: ProviderClaims;
+  if (provider === "apple") {
+    const { payload } = await jwtVerify(idToken, appleJwks, {
+      issuer: "https://appleid.apple.com",
+      audience: APPLE_AUD,
+    });
+    claims = { sub: String(payload.sub), email: payload.email as string | undefined };
+  } else if (provider === "google") {
+    const { payload } = await jwtVerify(idToken, googleJwks, {
+      issuer: ["https://accounts.google.com", "accounts.google.com"],
+      audience: GOOGLE_AUD,
+    });
+    claims = { sub: String(payload.sub), email: payload.email as string | undefined };
+  } else {
+    throw new HttpError(400, "Unknown auth provider");
+  }
+  if (!claims.sub) throw new HttpError(401, "Token missing subject");
+
+  const user = await getOrCreateUser(`${provider}:${claims.sub}`, claims.email ?? "", name);
+  const token = await new SignJWT({ role: user.role })
+    .setProtectedHeader({ alg: "HS256" })
+    .setSubject(user.id)
+    .setIssuedAt()
+    .setExpirationTime("30d")
+    .sign(appSecret());
+  return { token, user };
+}
+
+/** Validate our app session JWT (from the Authorization header) and load the user. */
 export async function requireUser(request: HttpRequest): Promise<User> {
   const header = request.headers.get("authorization") ?? "";
   const match = /^Bearer (.+)$/i.exec(header);
   if (!match) throw new HttpError(401, "Missing bearer token");
 
-  let claims: Claims;
+  let userId: string;
   try {
-    const { payload } = await jwtVerify(match[1], getJwks(), { issuer, audience });
-    claims = payload as unknown as Claims;
+    const { payload } = await jwtVerify(match[1], appSecret());
+    userId = String(payload.sub);
   } catch {
-    throw new HttpError(401, "Invalid token");
+    throw new HttpError(401, "Invalid or expired session");
   }
-  if (!claims.sub) throw new HttpError(401, "Token missing subject");
-  return getOrCreateUser(claims);
-}
 
-async function getOrCreateUser(claims: Claims): Promise<User> {
   const pool = await getPool();
-  const existing = await pool
+  const res = await pool
     .request()
-    .input("sub", sql.NVarChar, claims.sub)
-    .query("SELECT * FROM dbo.Users WHERE authProviderSub = @sub");
-  if (existing.recordset.length > 0) return mapUser(existing.recordset[0]);
-
-  // First sign-in → create a pending user (board approves to active for residency).
-  const email = claims.email ?? claims.preferred_username ?? "";
-  const name = claims.name ?? email.split("@")[0] ?? "New neighbor";
-  const created = await pool
-    .request()
-    .input("sub", sql.NVarChar, claims.sub)
-    .input("email", sql.NVarChar, email)
-    .input("name", sql.NVarChar, name)
-    .query(
-      `INSERT INTO dbo.Users (name, email, authProviderSub)
-       OUTPUT INSERTED.* VALUES (@name, @email, @sub)`
-    );
-  return mapUser(created.recordset[0]);
+    .input("id", sql.UniqueIdentifier, userId)
+    .query("SELECT * FROM dbo.Users WHERE id = @id");
+  if (res.recordset.length === 0) throw new HttpError(401, "User not found");
+  return mapUser(res.recordset[0]);
 }
 
 /** Server-side role/status gate. Client gating is UX only. */
@@ -68,6 +89,27 @@ export function assertRole(user: User, min: Role): void {
   if (user.status !== "active") throw new HttpError(403, "Account pending approval");
   const rank: Record<Role, number> = { resident: 0, eventCoordinator: 1, boardMember: 2 };
   if (rank[user.role] < rank[min]) throw new HttpError(403, "Insufficient role");
+}
+
+async function getOrCreateUser(providerSub: string, email: string, name?: string): Promise<User> {
+  const pool = await getPool();
+  const existing = await pool
+    .request()
+    .input("sub", sql.NVarChar, providerSub)
+    .query("SELECT * FROM dbo.Users WHERE authProviderSub = @sub");
+  if (existing.recordset.length > 0) return mapUser(existing.recordset[0]);
+
+  const displayName = name && name.trim() ? name.trim() : email.split("@")[0] || "New neighbor";
+  const created = await pool
+    .request()
+    .input("sub", sql.NVarChar, providerSub)
+    .input("email", sql.NVarChar, email)
+    .input("name", sql.NVarChar, displayName)
+    .query(
+      `INSERT INTO dbo.Users (name, email, authProviderSub)
+       OUTPUT INSERTED.* VALUES (@name, @email, @sub)`
+    );
+  return mapUser(created.recordset[0]);
 }
 
 function mapUser(r: Record<string, unknown>): User {

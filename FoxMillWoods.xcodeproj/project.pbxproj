@@ -34,6 +34,7 @@
 		A6BEF2FFF64E69CA6A80C82C /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927350ADDADBE41C2A542113 /* YouView.swift */; };
 		AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2464721EAE8F60BE46678169 /* PlaceholderScreen.swift */; };
 		BD4E15A749D69F92D7CE80DC /* Figtree-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 255D019A11BB00D494D300FE /* Figtree-OFL.txt */; };
+		CB536B4E19A49622506AAD0E /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 994797E699100347F7324871 /* GoogleSignIn */; };
 		D5A20E529BEF55AD04E4C4A7 /* ScanView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B9E40C1B709DD0900BBF7B7 /* ScanView.swift */; };
 		D6D1460AA10523A4842A7E63 /* EventDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F4402BD418E837F8EE2088E /* EventDetailView.swift */; };
 		E3D94340B1533FAA08FE5518 /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36098853752598AE4669B21C /* AuthService.swift */; };
@@ -95,6 +96,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2A2C08D8B1F236D30C2E8F66 /* StripePaymentSheet in Frameworks */,
+				CB536B4E19A49622506AAD0E /* GoogleSignIn in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -327,6 +329,7 @@
 			name = FoxMillWoods;
 			packageProductDependencies = (
 				A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */,
+				994797E699100347F7324871 /* GoogleSignIn */,
 			);
 			productName = FoxMillWoods;
 			productReference = 2D0C35779F1CAC9D30E3C2C0 /* FoxMillWoods.app */;
@@ -375,6 +378,7 @@
 			mainGroup = 17A927DBAB6CC03E175E034E;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
+				93482B09C87A5C9EB41FB01B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
 				20EF8CEC421F052F25F2F455 /* XCRemoteSwiftPackageReference "stripe-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
@@ -588,6 +592,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/FoxMillWoods.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T8LQMMVLY9;
@@ -609,6 +614,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Config/FoxMillWoods.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = T8LQMMVLY9;
@@ -700,9 +706,22 @@
 				minimumVersion = 24.0.0;
 			};
 		};
+		93482B09C87A5C9EB41FB01B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 7.1.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		994797E699100347F7324871 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 93482B09C87A5C9EB41FB01B /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
 		A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 20EF8CEC421F052F25F2F455 /* XCRemoteSwiftPackageReference "stripe-ios" */;

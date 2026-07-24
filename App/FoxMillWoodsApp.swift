@@ -1,4 +1,5 @@
 import SwiftUI
+import GoogleSignIn
 
 /// App entry point. The whole product hangs off a single stable tab shell (behind
 /// an auth gate) — new modules surface inside those tabs, never as new tabs.
@@ -12,6 +13,10 @@ struct FoxMillWoodsApp: App {
             RootView()
                 .environment(auth)
                 .environment(payments)
+                .onOpenURL { url in
+                    // Google Sign-In redirect callback.
+                    GIDSignIn.sharedInstance.handle(url)
+                }
         }
     }
 }

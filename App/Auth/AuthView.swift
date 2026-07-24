@@ -58,10 +58,10 @@ struct AuthView: View {
                     .padding(.horizontal, 18)
             }
             signButton(title: "Sign in with Apple", symbol: "apple.logo", fg: .white, bg: FMW.ink) {
-                Task { await auth.signIn(idpHint: "apple") }
+                Task { await auth.signInWithApple() }
             }
             signButton(title: "Sign in with Google", symbol: "g.circle.fill", fg: FMW.ink, bg: FMW.paper, bordered: true) {
-                Task { await auth.signIn(idpHint: "google") }
+                Task { await auth.signInWithGoogle() }
             }
             Text("By continuing you agree to the Fox Mill Woods community guidelines.")
                 .font(FMW.ui(11))

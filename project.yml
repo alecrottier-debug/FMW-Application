@@ -24,6 +24,9 @@ packages:
   stripe-ios:
     url: https://github.com/stripe/stripe-ios
     from: "24.0.0"
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: "7.1.0"
 
 targets:
   FoxMillWoods:
@@ -36,7 +39,14 @@ targets:
           - "**/*.md"                # keep the Fonts README out of the bundle
     dependencies:
       - package: stripe-ios
-        product: StripePaymentSheet  # Stripe PaymentSheet (card + US bank/ACH) — SAQ A
+        product: StripePaymentSheet  # Stripe PaymentSheet — dues (US bank/ACH), SAQ A
+      - package: GoogleSignIn
+        product: GoogleSignIn        # native Google Sign-In
+    entitlements:
+      path: Config/FoxMillWoods.entitlements
+      properties:
+        com.apple.developer.applesignin:
+          - Default                  # Sign in with Apple
     settings:
       base:
         PRODUCT_NAME: FoxMillWoods
@@ -58,18 +68,16 @@ targets:
         UIAppFonts:                       # matches FMW.display(Fraunces) / FMW.ui(Figtree)
           - Fraunces-Variable.ttf
           - Figtree-Variable.ttf
-        # OAuth redirect scheme for Entra sign-in (foxmillwoods://auth).
+        # Google Sign-In callback = your reversed iOS client id. After creating the
+        # Google OAuth iOS client, replace the placeholder below with
+        # com.googleusercontent.apps.<your-id>.
         CFBundleURLTypes:
-          - CFBundleURLName: com.foxmillwoods.app.auth
+          - CFBundleURLName: com.foxmillwoods.app.google
             CFBundleURLSchemes:
-              - foxmillwoods
-        # Runtime config read by AppConfig.swift. Empty = demo mode (sign-in disabled).
-        # Set these to your deployed values to turn on real auth/API.
+              - com.googleusercontent.apps.REPLACE-WITH-GOOGLE-REVERSED-CLIENT-ID
+        # Runtime config read by AppConfig.swift. Empty = demo mode.
         API_BASE_URL: ""
-        ENTRA_AUTHORIZE_URL: ""
-        ENTRA_TOKEN_URL: ""
-        ENTRA_CLIENT_ID: ""
-        ENTRA_REDIRECT_URI: "foxmillwoods://auth"
+        GOOGLE_CLIENT_ID: ""
         STRIPE_PUBLISHABLE_KEY: ""
 
   FoxMillWoodsTests:
