@@ -27,14 +27,14 @@
 			<string>com.foxmillwoods.app.google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.REPLACE-WITH-GOOGLE-REVERSED-CLIENT-ID</string>
+				<string>com.googleusercontent.apps.719141246113-3vbeumk61r13ce3hp5sk2rbsbpmb4d61</string>
 			</array>
 		</dict>
 	</array>
 	<key>CFBundleVersion</key>
 	<string>1</string>
 	<key>GOOGLE_CLIENT_ID</key>
-	<string></string>
+	<string>719141246113-3vbeumk61r13ce3hp5sk2rbsbpmb4d61.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>STRIPE_PUBLISHABLE_KEY</key>

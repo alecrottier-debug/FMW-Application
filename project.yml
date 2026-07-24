@@ -79,10 +79,10 @@ targets:
         CFBundleURLTypes:
           - CFBundleURLName: com.foxmillwoods.app.google
             CFBundleURLSchemes:
-              - com.googleusercontent.apps.REPLACE-WITH-GOOGLE-REVERSED-CLIENT-ID
+              - com.googleusercontent.apps.719141246113-3vbeumk61r13ce3hp5sk2rbsbpmb4d61
         # Runtime config read by AppConfig.swift. Empty = demo mode.
         API_BASE_URL: ""
-        GOOGLE_CLIENT_ID: ""
+        GOOGLE_CLIENT_ID: "719141246113-3vbeumk61r13ce3hp5sk2rbsbpmb4d61.apps.googleusercontent.com"
         STRIPE_PUBLISHABLE_KEY: ""
 
   FoxMillWoodsTests:
