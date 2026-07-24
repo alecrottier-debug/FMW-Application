@@ -50,6 +50,18 @@ targets:
         UIAppFonts:                       # matches FMW.display(Fraunces) / FMW.ui(Figtree)
           - Fraunces-Variable.ttf
           - Figtree-Variable.ttf
+        # OAuth redirect scheme for Entra sign-in (foxmillwoods://auth).
+        CFBundleURLTypes:
+          - CFBundleURLName: com.foxmillwoods.app.auth
+            CFBundleURLSchemes:
+              - foxmillwoods
+        # Runtime config read by AppConfig.swift. Empty = demo mode (sign-in disabled).
+        # Set these to your deployed values to turn on real auth/API.
+        API_BASE_URL: ""
+        ENTRA_AUTHORIZE_URL: ""
+        ENTRA_TOKEN_URL: ""
+        ENTRA_CLIENT_ID: ""
+        ENTRA_REDIRECT_URI: "foxmillwoods://auth"
 
   FoxMillWoodsTests:
     type: bundle.unit-test

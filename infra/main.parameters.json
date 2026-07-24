@@ -16,6 +16,15 @@
     },
     "sqlAdminPassword": {
       "value": "${SQL_ADMIN_PASSWORD}"
+    },
+    "entraIssuer": {
+      "value": "${ENTRA_ISSUER=}"
+    },
+    "entraAudience": {
+      "value": "${ENTRA_AUDIENCE=}"
+    },
+    "entraJwksUri": {
+      "value": "${ENTRA_JWKS_URI=}"
     }
   }
 }

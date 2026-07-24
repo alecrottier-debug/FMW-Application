@@ -27,6 +27,15 @@ param sqlAdminPassword string
 @description('Optional principal to grant data-plane access for local development.')
 param principalId string = ''
 
+@description('Entra External ID token issuer, e.g. https://<tenant>.ciamlogin.com/<tenantId>/v2.0')
+param entraIssuer string = ''
+
+@description('Entra API audience (the API app-registration client id).')
+param entraAudience string = ''
+
+@description('Entra JWKS (signing keys) URI.')
+param entraJwksUri string = ''
+
 var abbrs = {
   storage: 'st'
   keyVault: 'kv'
@@ -189,6 +198,12 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'KEY_VAULT_URI', value: kv.properties.vaultUri }
         { name: 'SQL_SERVER_FQDN', value: sqlServer.properties.fullyQualifiedDomainName }
         { name: 'SQL_DATABASE', value: sqlDb.name }
+        { name: 'ENTRA_ISSUER', value: entraIssuer }
+        { name: 'ENTRA_AUDIENCE', value: entraAudience }
+        { name: 'ENTRA_JWKS_URI', value: entraJwksUri }
+        // Stripe secrets are read from Key Vault (create these secrets after `azd up`):
+        { name: 'STRIPE_SECRET_KEY', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=stripe-secret-key)' }
+        { name: 'STRIPE_WEBHOOK_SECRET', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=stripe-webhook-secret)' }
       ]
     }
   }

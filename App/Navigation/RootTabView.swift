@@ -122,6 +122,7 @@ private struct DebugScreen: View {
 
     @ViewBuilder var body: some View {
         switch name {
+        case "auth":              AuthView().environment(AuthService())
         case "home":              HomeView()
         case "events":            EventsView()
         case "event":             EventDetailView()

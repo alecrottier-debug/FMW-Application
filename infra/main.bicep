@@ -23,6 +23,15 @@ param sqlAdminPassword string
 @description('Object id of the running user/service principal, to grant local data-plane access (Key Vault / Storage). azd sets AZURE_PRINCIPAL_ID automatically.')
 param principalId string = ''
 
+@description('Entra token issuer. Set with: azd env set ENTRA_ISSUER <value>')
+param entraIssuer string = ''
+
+@description('Entra API audience (API app-registration client id). azd env set ENTRA_AUDIENCE <value>')
+param entraAudience string = ''
+
+@description('Entra JWKS URI. azd env set ENTRA_JWKS_URI <value>')
+param entraJwksUri string = ''
+
 var tags = { 'azd-env-name': environmentName }
 
 resource rg 'Microsoft.Resources/resourceGroups@2024-03-01' = {
@@ -41,6 +50,9 @@ module resources 'resources.bicep' = {
     sqlAdminLogin: sqlAdminLogin
     sqlAdminPassword: sqlAdminPassword
     principalId: principalId
+    entraIssuer: entraIssuer
+    entraAudience: entraAudience
+    entraJwksUri: entraJwksUri
   }
 }
 
