@@ -42,6 +42,8 @@ struct RootTabView: View {
         // simulator. Inert in normal launches.
         if let name = ProcessInfo.processInfo.environment["FMW_SCREEN"], !name.isEmpty {
             DebugScreen(name: name)
+                .environment(AuthService())
+                .environment(PaymentService())
         } else {
             tabs
         }

@@ -5,11 +5,13 @@ import SwiftUI
 @main
 struct FoxMillWoodsApp: App {
     @State private var auth = AuthService()
+    @State private var payments = PaymentService()
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(auth)
+                .environment(payments)
         }
     }
 }

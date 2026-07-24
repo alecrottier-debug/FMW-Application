@@ -12,6 +12,7 @@ import SwiftUI
 /// membershipStatus to paid only on the Stripe webhook, never on submit.
 struct DuesView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(PaymentService.self) private var payments
 
     // One-off shades sampled from the prototype (no token exists for these).
     // detail-hero override: linear-gradient(165deg,#EAF4EC,#DCEEDF 55%,#FDECD2)
@@ -312,7 +313,13 @@ struct DuesView: View {
 
     private var payBar: some View {
         VStack(spacing: 0) {
-            Button { } label: {
+            Button {
+                // ACH authorizes now but settles later — membership flips on the webhook.
+                Task {
+                    let done = await payments.payDues(method: method == .bank ? "ach" : "card")
+                    if done { dismiss() }
+                }
+            } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "checkmark")
                         .font(.system(size: 15, weight: .bold))
@@ -365,5 +372,5 @@ private struct DuesDashedLine: Shape {
 }
 
 #Preview {
-    DuesView()
+    DuesView().environment(PaymentService())
 }

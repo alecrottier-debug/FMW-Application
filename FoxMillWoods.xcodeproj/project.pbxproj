@@ -19,12 +19,14 @@
 		20C61514AC82434C9844CBE7 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CBFE70FC6895DE3176B39E /* CalendarView.swift */; };
 		233440CC8DF6FA6A40F3CD98 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FFCC9578682F03B73828F9 /* AppConfig.swift */; };
 		257E18D210FFAB6F4B922509 /* RoleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */; };
+		2A2C08D8B1F236D30C2E8F66 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */; };
 		5932B29A7DABC4D6FB939EC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E84284BCCD6EC7353774D /* Assets.xcassets */; };
 		5B65E30229ACE94FB1E47EAB /* DuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFED1816509E68097CE2722 /* DuesView.swift */; };
 		68E063245EC3353C6DBF2FAA /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBA321C6612785343519DFF /* WalletView.swift */; };
 		74A488590C33E22570D5CC55 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D812360C7B71FDE3FE2289AC /* EventEditorView.swift */; };
 		75DD179C4BEDFFE550FF9713 /* DirectoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615939EE46A0FA94858646ED /* DirectoryView.swift */; };
 		7F982E2E6D692A0AB1746D5A /* RentalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E8E89CA1AAB682F2440147 /* RentalsView.swift */; };
+		8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5154FD009227F747D86C278B /* PaymentService.swift */; };
 		9542F35DC5FDE31A3EC9BEAC /* Fraunces-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */; };
 		97FD2EC1B9B8EA694ECA2D27 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D510BBF3259AD6B08788B2 /* RootTabView.swift */; };
 		9D7497B956D871503C0342EC /* EventsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FEB33FDB0AA771010B7CB2 /* EventsService.swift */; };
@@ -64,6 +66,7 @@
 		4B9E40C1B709DD0900BBF7B7 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
 		4CBA321C6612785343519DFF /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
 		4EC8B47E5803E2224890E166 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
+		5154FD009227F747D86C278B /* PaymentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentService.swift; sourceTree = "<group>"; };
 		5593871D73CF0E6D79C511BD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		615939EE46A0FA94858646ED /* DirectoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryView.swift; sourceTree = "<group>"; };
 		7FA84E06D7CD950AD46FD6A9 /* FoxMillWoodsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxMillWoodsApp.swift; sourceTree = "<group>"; };
@@ -85,6 +88,17 @@
 		F4FBF22E16DEC4C89763797C /* PoolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolView.swift; sourceTree = "<group>"; };
 		F6FFCC9578682F03B73828F9 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		22ECC01313002802D31D174A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2A2C08D8B1F236D30C2E8F66 /* StripePaymentSheet in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
 		0DA56E4F38F221B10ADFFC6E /* Resources */ = {
@@ -195,6 +209,7 @@
 				99392AB550CE751DDB7CB518 /* Features */,
 				D100D673B69F4ECB143100CF /* Models */,
 				4889BC34B982E42EF7AF4DA3 /* Navigation */,
+				AA6BA3A5521B4AF65E36AB14 /* Payments */,
 				7FA84E06D7CD950AD46FD6A9 /* FoxMillWoodsApp.swift */,
 			);
 			path = App;
@@ -222,6 +237,14 @@
 				ABD970D4DD4737A7A54B407E /* You */,
 			);
 			path = Features;
+			sourceTree = "<group>";
+		};
+		AA6BA3A5521B4AF65E36AB14 /* Payments */ = {
+			isa = PBXGroup;
+			children = (
+				5154FD009227F747D86C278B /* PaymentService.swift */,
+			);
+			path = Payments;
 			sourceTree = "<group>";
 		};
 		ABD970D4DD4737A7A54B407E /* You */ = {
@@ -295,6 +318,7 @@
 			buildPhases = (
 				9867001AA19DD12C972CAEB1 /* Sources */,
 				3F827D05F6E3D78A36BD4AC7 /* Resources */,
+				22ECC01313002802D31D174A /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -302,6 +326,7 @@
 			);
 			name = FoxMillWoods;
 			packageProductDependencies = (
+				A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */,
 			);
 			productName = FoxMillWoods;
 			productReference = 2D0C35779F1CAC9D30E3C2C0 /* FoxMillWoods.app */;
@@ -349,6 +374,9 @@
 			);
 			mainGroup = 17A927DBAB6CC03E175E034E;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				20EF8CEC421F052F25F2F455 /* XCRemoteSwiftPackageReference "stripe-ios" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 77D83CCAE78AD98715F5C012 /* Products */;
 			projectDirPath = "";
@@ -397,6 +425,7 @@
 				20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */,
 				1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */,
 				0389CEB80006DAE65773D1AE /* KeychainStore.swift in Sources */,
+				8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */,
 				AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */,
 				198F92E347AAE4790F775A4B /* PoolView.swift in Sources */,
 				7F982E2E6D692A0AB1746D5A /* RentalsView.swift in Sources */,
@@ -661,6 +690,25 @@
 			defaultConfigurationName = Debug;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		20EF8CEC421F052F25F2F455 /* XCRemoteSwiftPackageReference "stripe-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/stripe/stripe-ios";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 20EF8CEC421F052F25F2F455 /* XCRemoteSwiftPackageReference "stripe-ios" */;
+			productName = StripePaymentSheet;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 1FC6E3C58A7E9A6D37AB6711 /* Project object */;
 }

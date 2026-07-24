@@ -17,6 +17,9 @@ enum AppConfig {
     /// Custom URL scheme used as the OAuth redirect callback.
     static let callbackScheme = "foxmillwoods"
 
+    /// Stripe publishable key (public — card data goes directly to Stripe, PCI SAQ A).
+    static let stripePublishableKey = infoString("STRIPE_PUBLISHABLE_KEY") ?? ""
+
     static var isAuthConfigured: Bool {
         !entraClientID.isEmpty && !entraAuthorizeURL.isEmpty && !entraTokenURL.isEmpty
     }
