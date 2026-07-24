@@ -35,14 +35,20 @@ struct EventsView: View {
                     .padding(.bottom, 10)
 
                 ForEach(events) { event in
-                    EventsViewRow(data: event, chevron: Self.chevron)
-                        .padding(.horizontal, 12)
-                        .padding(.bottom, 10)
+                    NavigationLink(value: AppRoute.eventDetail) {
+                        EventsViewRow(data: event, chevron: Self.chevron)
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 10)
                 }
 
-                PlanEventCard()
-                    .padding(.horizontal, 12)
-                    .padding(.top, 12)
+                NavigationLink(value: AppRoute.eventEditor) {
+                    PlanEventCard()
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 12)
+                .padding(.top, 12)
 
                 Color.clear.frame(height: 24)
             }

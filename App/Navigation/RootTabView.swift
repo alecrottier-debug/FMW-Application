@@ -49,27 +49,70 @@ struct RootTabView: View {
 
     private var tabs: some View {
         TabView(selection: $selection) {
-            HomeView()
-                .tag(Tab.home)
-                .tabItem { Label(Tab.home.title, systemImage: Tab.home.symbol) }
+            NavigationStack {
+                HomeView(onOpenEvents: { selection = .events })
+                    .toolbar(.hidden, for: .navigationBar)
+                    .fmwDestinations()
+            }
+            .tag(Tab.home)
+            .tabItem { Label(Tab.home.title, systemImage: Tab.home.symbol) }
 
-            EventsView()
-                .tag(Tab.events)
-                .tabItem { Label(Tab.events.title, systemImage: Tab.events.symbol) }
+            NavigationStack {
+                EventsView()
+                    .toolbar(.hidden, for: .navigationBar)
+                    .fmwDestinations()
+            }
+            .tag(Tab.events)
+            .tabItem { Label(Tab.events.title, systemImage: Tab.events.symbol) }
 
             CalendarView()
                 .tag(Tab.calendar)
                 .tabItem { Label(Tab.calendar.title, systemImage: Tab.calendar.symbol) }
 
-            WalletView()
-                .tag(Tab.wallet)
-                .tabItem { Label(Tab.wallet.title, systemImage: Tab.wallet.symbol) }
+            NavigationStack {
+                WalletView()
+                    .toolbar(.hidden, for: .navigationBar)
+                    .fmwDestinations()
+            }
+            .tag(Tab.wallet)
+            .tabItem { Label(Tab.wallet.title, systemImage: Tab.wallet.symbol) }
 
             YouView()
                 .tag(Tab.you)
                 .tabItem { Label(Tab.you.title, systemImage: Tab.you.symbol) }
         }
         .tint(FMW.pine)
+    }
+}
+
+/// Push destinations shared by every tab's NavigationStack, so a
+/// `NavigationLink(value: AppRoute.x)` anywhere resolves regardless of host tab.
+enum AppRoute: Hashable {
+    case eventDetail, eventEditor, rentals, directory, pool, dues, scan
+}
+
+private extension View {
+    func fmwDestinations() -> some View {
+        navigationDestination(for: AppRoute.self) { route in
+            AppRouteView(route: route)
+                .toolbar(.hidden, for: .navigationBar)
+        }
+    }
+}
+
+/// Concrete-view switch (no `AnyView`) mapping a route to its screen.
+private struct AppRouteView: View {
+    let route: AppRoute
+    @ViewBuilder var body: some View {
+        switch route {
+        case .eventDetail: EventDetailView()
+        case .eventEditor: EventEditorView()
+        case .rentals:     RentalsView()
+        case .directory:   DirectoryView()
+        case .pool:        PoolView()
+        case .dues:        DuesView()
+        case .scan:        ScanView()
+        }
     }
 }
 

@@ -125,9 +125,12 @@ private struct ResidentWallet: View {
     var body: some View {
         VStack(spacing: 0) {
             if showDues {
-                WalletDuesCard()
-                    .padding(.horizontal, 12)
-                    .padding(.top, 14)
+                NavigationLink(value: AppRoute.dues) {
+                    WalletDuesCard()
+                }
+                .buttonStyle(.plain)
+                .padding(.horizontal, 12)
+                .padding(.top, 14)
             }
 
             WalletBalanceCard()
@@ -373,9 +376,12 @@ private struct CommitteeDashboard: View {
             }
             .padding(.horizontal, 12)
 
-            WalletScanButton()
-                .padding(.horizontal, 18)
-                .padding(.top, 16)
+            NavigationLink(value: AppRoute.scan) {
+                WalletScanButton()
+            }
+            .buttonStyle(.plain)
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
         }
     }
 }

@@ -5,6 +5,9 @@ import SwiftUI
 /// Pool & Tennis, all live), and a notice. New modules surface here — never a new tab.
 /// Built to match Design/prototype.html (data-screen="home").
 struct HomeView: View {
+    /// Called when the "Events" module tile is tapped (switches to the Events tab).
+    var onOpenEvents: () -> Void = {}
+
     var body: some View {
         ScrollView {
             VStack(spacing: 0) {
@@ -21,7 +24,7 @@ struct HomeView: View {
                     .padding(.top, 22)
                     .padding(.bottom, 10)
 
-                ModuleGrid()
+                ModuleGrid(onOpenEvents: onOpenEvents)
                     .padding(.horizontal, 18)
 
                 NoticeCard()
@@ -187,15 +190,29 @@ private struct SectionHeader: View {
 }
 
 private struct ModuleGrid: View {
+    let onOpenEvents: () -> Void
+
     var body: some View {
         Grid(horizontalSpacing: 11, verticalSpacing: 11) {
             GridRow {
-                ModuleTile(title: "Events", subtitle: "RSVP & pay for socials", symbol: "calendar", style: .pine)
-                ModuleTile(title: "Rent the Pavilion", subtitle: "Book an open date", symbol: "house.fill", style: .sun)
+                Button(action: onOpenEvents) {
+                    ModuleTile(title: "Events", subtitle: "RSVP & pay for socials", symbol: "calendar", style: .pine)
+                }
+                .buttonStyle(.plain)
+                NavigationLink(value: AppRoute.rentals) {
+                    ModuleTile(title: "Rent the Pavilion", subtitle: "Book an open date", symbol: "house.fill", style: .sun)
+                }
+                .buttonStyle(.plain)
             }
             GridRow {
-                ModuleTile(title: "Directory", subtitle: "Find a neighbor", symbol: "person.2.fill", style: .pine)
-                ModuleTile(title: "Pool & Tennis", subtitle: "Today’s hours", symbol: "water.waves", style: .sun)
+                NavigationLink(value: AppRoute.directory) {
+                    ModuleTile(title: "Directory", subtitle: "Find a neighbor", symbol: "person.2.fill", style: .pine)
+                }
+                .buttonStyle(.plain)
+                NavigationLink(value: AppRoute.pool) {
+                    ModuleTile(title: "Pool & Tennis", subtitle: "Today’s hours", symbol: "water.waves", style: .sun)
+                }
+                .buttonStyle(.plain)
             }
         }
     }
