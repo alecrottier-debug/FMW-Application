@@ -47,6 +47,9 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        UIAppFonts:                       # matches FMW.display(Fraunces) / FMW.ui(Figtree)
+          - Fraunces-Variable.ttf
+          - Figtree-Variable.ttf
 
   FoxMillWoodsTests:
     type: bundle.unit-test

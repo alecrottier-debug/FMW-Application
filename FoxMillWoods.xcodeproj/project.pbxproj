@@ -9,15 +9,19 @@
 /* Begin PBXBuildFile section */
 		046CA96BCF1F1329719238C2 /* EventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AC08CC9B96CF414DAC0526 /* EventsView.swift */; };
 		1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5593871D73CF0E6D79C511BD /* HomeView.swift */; };
+		1346190D46B33954C1947CBD /* Fraunces-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC59017D2592795430A5D173 /* Fraunces-Variable.ttf */; };
 		1B6DD097AAF8E6B111B6D7C5 /* DesignTokens.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4EC8B47E5803E2224890E166 /* DesignTokens.swift */; };
 		20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FA84E06D7CD950AD46FD6A9 /* FoxMillWoodsApp.swift */; };
 		20C61514AC82434C9844CBE7 /* CalendarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 48CBFE70FC6895DE3176B39E /* CalendarView.swift */; };
 		257E18D210FFAB6F4B922509 /* RoleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */; };
 		5932B29A7DABC4D6FB939EC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E84284BCCD6EC7353774D /* Assets.xcassets */; };
 		68E063245EC3353C6DBF2FAA /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBA321C6612785343519DFF /* WalletView.swift */; };
+		9542F35DC5FDE31A3EC9BEAC /* Fraunces-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */; };
 		97FD2EC1B9B8EA694ECA2D27 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D510BBF3259AD6B08788B2 /* RootTabView.swift */; };
 		A6BEF2FFF64E69CA6A80C82C /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927350ADDADBE41C2A542113 /* YouView.swift */; };
 		AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2464721EAE8F60BE46678169 /* PlaceholderScreen.swift */; };
+		BD4E15A749D69F92D7CE80DC /* Figtree-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 255D019A11BB00D494D300FE /* Figtree-OFL.txt */; };
+		F7CF7CB70C7B43B2C43367E1 /* Figtree-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 37A1B0521048CDDDEA2E77C7 /* Figtree-Variable.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -32,7 +36,9 @@
 
 /* Begin PBXFileReference section */
 		2464721EAE8F60BE46678169 /* PlaceholderScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlaceholderScreen.swift; sourceTree = "<group>"; };
+		255D019A11BB00D494D300FE /* Figtree-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Figtree-OFL.txt"; sourceTree = "<group>"; };
 		2D0C35779F1CAC9D30E3C2C0 /* FoxMillWoods.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FoxMillWoods.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		37A1B0521048CDDDEA2E77C7 /* Figtree-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Figtree-Variable.ttf"; sourceTree = "<group>"; };
 		48CBFE70FC6895DE3176B39E /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		4CBA321C6612785343519DFF /* WalletView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WalletView.swift; sourceTree = "<group>"; };
 		4EC8B47E5803E2224890E166 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
@@ -43,13 +49,16 @@
 		B7D510BBF3259AD6B08788B2 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleAndTokenTests.swift; sourceTree = "<group>"; };
 		D4AC08CC9B96CF414DAC0526 /* EventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsView.swift; sourceTree = "<group>"; };
+		DC59017D2592795430A5D173 /* Fraunces-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Fraunces-Variable.ttf"; sourceTree = "<group>"; };
 		DDB2849A8E5911D8BDB27C12 /* FoxMillWoodsTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = FoxMillWoodsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Fraunces-OFL.txt"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
 		0DA56E4F38F221B10ADFFC6E /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				6C1D67D1E786FC96C84B63E1 /* Fonts */,
 				9B6E84284BCCD6EC7353774D /* Assets.xcassets */,
 			);
 			path = Resources;
@@ -95,6 +104,17 @@
 				48CBFE70FC6895DE3176B39E /* CalendarView.swift */,
 			);
 			path = Calendar;
+			sourceTree = "<group>";
+		};
+		6C1D67D1E786FC96C84B63E1 /* Fonts */ = {
+			isa = PBXGroup;
+			children = (
+				255D019A11BB00D494D300FE /* Figtree-OFL.txt */,
+				37A1B0521048CDDDEA2E77C7 /* Figtree-Variable.ttf */,
+				F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */,
+				DC59017D2592795430A5D173 /* Fraunces-Variable.ttf */,
+			);
+			path = Fonts;
 			sourceTree = "<group>";
 		};
 		703E10CEDCE1BA8315F48104 /* Events */ = {
@@ -250,6 +270,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				5932B29A7DABC4D6FB939EC2 /* Assets.xcassets in Resources */,
+				BD4E15A749D69F92D7CE80DC /* Figtree-OFL.txt in Resources */,
+				F7CF7CB70C7B43B2C43367E1 /* Figtree-Variable.ttf in Resources */,
+				9542F35DC5FDE31A3EC9BEAC /* Fraunces-OFL.txt in Resources */,
+				1346190D46B33954C1947CBD /* Fraunces-Variable.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
