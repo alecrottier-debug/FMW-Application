@@ -27,6 +27,9 @@ packages:
   GoogleSignIn:
     url: https://github.com/google/GoogleSignIn-iOS
     from: "7.1.0"
+  braintree-drop-in:
+    url: https://github.com/braintree/braintree-ios-drop-in
+    from: "9.14.0"
 
 targets:
   FoxMillWoods:
@@ -42,6 +45,8 @@ targets:
         product: StripePaymentSheet  # Stripe PaymentSheet — dues (US bank/ACH), SAQ A
       - package: GoogleSignIn
         product: GoogleSignIn        # native Google Sign-In
+      - package: braintree-drop-in
+        product: BraintreeDropIn      # Apple Pay + card + PayPal (events/rentals)
     entitlements:
       path: Config/FoxMillWoods.entitlements
       properties:

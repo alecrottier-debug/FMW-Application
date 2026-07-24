@@ -83,7 +83,7 @@ final class PaymentService {
     }
 }
 
-struct OrderLineInput: Encodable {
+struct OrderLineInput: Encodable, Sendable {
     let eventItemId: String
     let quantity: Int
 }

@@ -44,6 +44,7 @@ struct RootTabView: View {
             DebugScreen(name: name)
                 .environment(AuthService())
                 .environment(PaymentService())
+                .environment(BraintreeService())
         } else {
             tabs
         }

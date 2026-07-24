@@ -151,7 +151,7 @@ CREATE TABLE dbo.Payments (
     bookingId   UNIQUEIDENTIFIER NULL CONSTRAINT FK_Payments_Booking REFERENCES dbo.PavilionBookings(id),
     userId      UNIQUEIDENTIFIER NOT NULL CONSTRAINT FK_Payments_User REFERENCES dbo.Users(id),
     amount      DECIMAL(10,2)    NOT NULL,
-    source      VARCHAR(10)      NOT NULL CHECK (source IN ('card','venmo','cash','check','ach')),
+    source      VARCHAR(10)      NOT NULL CHECK (source IN ('card','venmo','cash','check','ach','paypal','applepay')),
     stripeRef   NVARCHAR(120)    NULL,
     loggedBy    UNIQUEIDENTIFIER NULL CONSTRAINT FK_Payments_LoggedBy REFERENCES dbo.Users(id),
     [timestamp] DATETIME2        NOT NULL DEFAULT SYSUTCDATETIME()

@@ -11,6 +11,10 @@ import SwiftUI
 /// price). The steppers drive the total and the button label just like the prototype.
 struct EventDetailView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(BraintreeService.self) private var braintree
+
+    // Real event/item ids come from the live Events API; the sample view uses placeholders.
+    private let eventId = "00000000-0000-0000-0000-000000000000"
 
     // One-off shades sampled from the prototype (no token exists for these).
     private static let avatarPurple = Color(hex: 0x8A7CC9)
@@ -341,7 +345,7 @@ struct EventDetailView: View {
     // MARK: - Sticky pay bar
 
     private var payBar: some View {
-        Button { } label: {
+        Button { Task { await pay() } } label: {
             HStack(spacing: 8) {
                 Image(systemName: "creditcard")
                     .font(.system(size: 15, weight: .bold))
@@ -362,6 +366,16 @@ struct EventDetailView: View {
         .padding(.top, 16)
         .padding(.bottom, 18)
         .background(Self.payBarFade)
+    }
+
+    /// Itemized checkout via Braintree (Apple Pay / card / PayPal). Lines carry the
+    /// item + quantity so the PayPal receipt and our Order/OrderLines reconcile.
+    private func pay() async {
+        let lines = items.indices.compactMap { i in
+            quantities[i] > 0 ? OrderLineInput(eventItemId: items[i].id.uuidString, quantity: quantities[i]) : nil
+        }
+        guard !lines.isEmpty else { return }
+        if await braintree.checkout(eventId: eventId, lines: lines) { dismiss() }
     }
 
     // MARK: - Helpers
@@ -396,5 +410,5 @@ private struct EventDetailDashedLine: Shape {
 }
 
 #Preview {
-    EventDetailView()
+    EventDetailView().environment(BraintreeService())
 }

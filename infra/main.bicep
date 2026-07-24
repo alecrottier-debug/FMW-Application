@@ -23,14 +23,11 @@ param sqlAdminPassword string
 @description('Object id of the running user/service principal, to grant local data-plane access (Key Vault / Storage). azd sets AZURE_PRINCIPAL_ID automatically.')
 param principalId string = ''
 
-@description('Entra token issuer. Set with: azd env set ENTRA_ISSUER <value>')
-param entraIssuer string = ''
+@description('Google OAuth iOS client id. azd env set GOOGLE_CLIENT_ID <value>')
+param googleClientId string = ''
 
-@description('Entra API audience (API app-registration client id). azd env set ENTRA_AUDIENCE <value>')
-param entraAudience string = ''
-
-@description('Entra JWKS URI. azd env set ENTRA_JWKS_URI <value>')
-param entraJwksUri string = ''
+@description('Braintree environment (sandbox | production). azd env set BRAINTREE_ENVIRONMENT <value>')
+param braintreeEnvironment string = 'sandbox'
 
 var tags = { 'azd-env-name': environmentName }
 
@@ -50,9 +47,8 @@ module resources 'resources.bicep' = {
     sqlAdminLogin: sqlAdminLogin
     sqlAdminPassword: sqlAdminPassword
     principalId: principalId
-    entraIssuer: entraIssuer
-    entraAudience: entraAudience
-    entraJwksUri: entraJwksUri
+    googleClientId: googleClientId
+    braintreeEnvironment: braintreeEnvironment
   }
 }
 

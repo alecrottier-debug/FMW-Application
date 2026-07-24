@@ -1,72 +1,37 @@
 # Go-live checklist
 
-The app + API + infra for **auth (step 1)**, **events (step 2)**, and **payments (step 5/5a)**
-are written and build-verified. They are **not live** — that requires accounts and secrets
-only you can create. Nothing secret is committed; all of it is read from Key Vault / Info.plist.
-
-Until these are set, the app runs in **demo mode**: sign-in is skipped, screens show sample
-data, and "Pay" reports that payments aren't configured.
+App + API + infra are **build-verified**. They're **not live** — that needs accounts and
+secrets only you can create. Nothing secret is committed; everything is read from Key Vault
+/ Info.plist. Until set, the app runs in **demo mode** (sign-in skipped, sample data, pay
+buttons report "not configured").
 
 ## 1. Azure (database + API)
 ```bash
-azd auth login
-azd env new fmw-dev
-azd env set SQL_ADMIN_PASSWORD '<a-strong-password>'
-azd up                     # provisions infra + deploys the API (Flex Consumption)
-```
-Then apply the schema (Entra auth to SQL):
-```bash
+azd auth login && azd env new fmw-dev
+azd env set SQL_ADMIN_PASSWORD '<strong-password>'
+azd up
 sqlcmd -S <sql-server>.database.windows.net -d foxmillwoods -G -i infra/sql/schema.sql
 ```
-Grant the Function App's managed identity a DB login (one-time, run as the SQL Entra admin):
-```sql
-CREATE USER [<func-app-name>] FROM EXTERNAL PROVIDER;
-ALTER ROLE db_datareader ADD MEMBER [<func-app-name>];
-ALTER ROLE db_datawriter ADD MEMBER [<func-app-name>];
-```
-Seed one active dues period and (optionally) FacilityHours.
+Grant the Function App's managed identity a DB login (`CREATE USER [<func-app>] FROM EXTERNAL PROVIDER;` + db_datareader/db_datawriter). Seed one active `DuesPeriods` row.
 
-## 2. Entra External ID (Apple + Google sign-in)
-- Create an **External ID** tenant; add **Apple** and **Google** as social identity providers.
-- Register **two apps**: an **API** app (its client id = audience) and a **public client** app
-  for iOS (redirect `foxmillwoods://auth`, PKCE, no secret).
-- Set backend values: `azd env set ENTRA_ISSUER …`, `ENTRA_AUDIENCE …`, `ENTRA_JWKS_URI …`, then `azd up`.
-- Set iOS values in `project.yml` `info.properties` (then `xcodegen generate`):
-  `API_BASE_URL`, `ENTRA_AUTHORIZE_URL`, `ENTRA_TOKEN_URL`, `ENTRA_CLIENT_ID`.
-- First sign-in creates a **pending** user; a board member approves via `POST /users/{id}/approve`.
+## 2. Sign-in — native Apple + Google
+- **Apple**: the app already has the *Sign in with Apple* entitlement. Make sure the App ID `com.foxmillwoods.app` has that capability enabled (automatic signing does this).
+- **Google**: create an OAuth **iOS client** at console.cloud.google.com → copy the client id. Put it in `project.yml` `info.properties` → `GOOGLE_CLIENT_ID`, and set the reversed-client-id **URL scheme** (`com.googleusercontent.apps.<id>`), then `xcodegen generate`. Also set the Function app setting: `azd env set GOOGLE_CLIENT_ID <id>`.
+- **Session secret**: `az keyvault secret set --vault-name <kv> --name app-jwt-secret --value <long-random-string>` (signs our own session tokens).
 
-## 3. Stripe (payments + ACH)
-- Create a Stripe account; in the Dashboard enable **US bank account** (ACH) and set the
-  statement descriptor / transaction classification (Nacha).
-- Put secrets in Key Vault (the Function reads them as references):
-```bash
-az keyvault secret set --vault-name <kv> --name stripe-secret-key    --value sk_test_xxx
-az keyvault secret set --vault-name <kv> --name stripe-webhook-secret --value whsec_xxx
-```
-- Set the iOS **publishable** key in `project.yml` (`STRIPE_PUBLISHABLE_KEY`, `pk_test_…`).
-- Add a webhook endpoint in Stripe → `https://<func-app>/api/stripe/webhook`, subscribed to
-  `payment_intent.succeeded` and `payment_intent.payment_failed`.
+## 3. Payments
+### Events / rentals — **Braintree** (Apple Pay + card + PayPal → your bank)
+- Create a Braintree account (**sandbox** first), connect your bank, enable **PayPal** + **Apple Pay**.
+- Key Vault: `braintree-merchant-id`, `braintree-public-key`, `braintree-private-key`. Set `BRAINTREE_ENVIRONMENT` (`sandbox`→`production` when ready).
+- **Apple Pay**: create an Apple Pay **Merchant ID** + add the `in-app-payments` entitlement so the Drop-in shows the Apple Pay button (card + PayPal work without it).
+### Dues — **Stripe ACH** (kept, low fee)
+- Stripe account; enable **US bank account** (ACH). Key Vault: `stripe-secret-key`, `stripe-webhook-secret`. iOS `STRIPE_PUBLISHABLE_KEY`. Register the webhook → `https://<func-app>/api/stripe/webhook`.
 
-## 4. iOS signing (device / TestFlight)
-- Set `DEVELOPMENT_TEAM` in `project.yml` and add the **Sign in with Apple** capability.
-- Event tickets / rentals stay **external payment** (not IAP) per App Store 3.1.3/3.1.5.
+## 4. iOS distribution — TestFlight
+`DEVELOPMENT_TEAM` is set. One command: **`scripts/beta.sh`** (Admin API key in `scripts/private/`, Issuer id in `scripts/beta.env`). First distribution build already uploaded.
 
-## 5. Distribute to testers (TestFlight)
-One command: **`scripts/beta.sh`** (archive → export → upload). Prereqs: Developer Program
-membership, an App Store Connect app record for `com.foxmillwoods.app`, and an App Store
-Connect **API key** (Users and Access → Integrations). Then:
-```bash
-export ASC_KEY_ID=XXXXXXXXXX
-export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
-export ASC_KEY_PATH="$HOME/keys/AuthKey_XXXXXXXXXX.p8"
-scripts/beta.sh            # archive + upload to TestFlight
-scripts/beta.sh export     # just build a .ipa (drag into Transporter) if you prefer the GUI
-```
-The build appears in App Store Connect → **TestFlight** after processing; add testers by email
-or turn on the **public link**. Icon (1024, no alpha) and export-compliance are already set.
-For a **meaningful** beta (real login/dues), do steps 1–3 first; otherwise ship the current
-**demo build** for look-and-flow feedback.
-
-## What's intentionally not done yet
-Pavilion booking payment, receipt scan → Blob upload, dues autopay, and full money-dashboard
-reconciliation endpoints. The models/screens exist; wiring them follows the same patterns above.
+## Not built yet
+Pavilion booking payment, receipt scan → Blob upload, dues autopay, money-dashboard
+reconciliation endpoints, and wiring Event detail/editor to live API data (Events **list**
+is already wired). Note: **CLAUDE.md still describes the original Stripe + Entra design** —
+the live stack is now Braintree (events) + Stripe (dues) + native Apple/Google auth.

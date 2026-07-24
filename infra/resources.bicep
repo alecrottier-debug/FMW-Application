@@ -27,14 +27,11 @@ param sqlAdminPassword string
 @description('Optional principal to grant data-plane access for local development.')
 param principalId string = ''
 
-@description('Entra External ID token issuer, e.g. https://<tenant>.ciamlogin.com/<tenantId>/v2.0')
-param entraIssuer string = ''
+@description('Google OAuth iOS client id (…apps.googleusercontent.com).')
+param googleClientId string = ''
 
-@description('Entra API audience (the API app-registration client id).')
-param entraAudience string = ''
-
-@description('Entra JWKS (signing keys) URI.')
-param entraJwksUri string = ''
+@description('Braintree environment: sandbox | production.')
+param braintreeEnvironment string = 'sandbox'
 
 var abbrs = {
   storage: 'st'
@@ -198,10 +195,16 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'KEY_VAULT_URI', value: kv.properties.vaultUri }
         { name: 'SQL_SERVER_FQDN', value: sqlServer.properties.fullyQualifiedDomainName }
         { name: 'SQL_DATABASE', value: sqlDb.name }
-        { name: 'ENTRA_ISSUER', value: entraIssuer }
-        { name: 'ENTRA_AUDIENCE', value: entraAudience }
-        { name: 'ENTRA_JWKS_URI', value: entraJwksUri }
-        // Stripe secrets are read from Key Vault (create these secrets after `azd up`):
+        // Native Apple + Google sign-in; APP_JWT_SECRET signs our own session tokens.
+        { name: 'APP_JWT_SECRET', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=app-jwt-secret)' }
+        { name: 'APPLE_BUNDLE_ID', value: 'com.foxmillwoods.app' }
+        { name: 'GOOGLE_CLIENT_ID', value: googleClientId }
+        // Braintree (events/rentals) — secrets from Key Vault; environment is plain:
+        { name: 'BRAINTREE_ENVIRONMENT', value: braintreeEnvironment }
+        { name: 'BRAINTREE_MERCHANT_ID', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=braintree-merchant-id)' }
+        { name: 'BRAINTREE_PUBLIC_KEY', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=braintree-public-key)' }
+        { name: 'BRAINTREE_PRIVATE_KEY', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=braintree-private-key)' }
+        // Stripe (dues, low-fee ACH) — secrets from Key Vault:
         { name: 'STRIPE_SECRET_KEY', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=stripe-secret-key)' }
         { name: 'STRIPE_WEBHOOK_SECRET', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=stripe-webhook-secret)' }
       ]

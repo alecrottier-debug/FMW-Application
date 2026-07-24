@@ -7,12 +7,14 @@ import GoogleSignIn
 struct FoxMillWoodsApp: App {
     @State private var auth = AuthService()
     @State private var payments = PaymentService()
+    @State private var braintree = BraintreeService()
 
     var body: some Scene {
         WindowGroup {
             RootView()
                 .environment(auth)
                 .environment(payments)
+                .environment(braintree)
                 .onOpenURL { url in
                     // Google Sign-In redirect callback.
                     GIDSignIn.sharedInstance.handle(url)

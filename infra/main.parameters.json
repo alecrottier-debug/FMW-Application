@@ -17,14 +17,11 @@
     "sqlAdminPassword": {
       "value": "${SQL_ADMIN_PASSWORD}"
     },
-    "entraIssuer": {
-      "value": "${ENTRA_ISSUER=}"
+    "googleClientId": {
+      "value": "${GOOGLE_CLIENT_ID=}"
     },
-    "entraAudience": {
-      "value": "${ENTRA_AUDIENCE=}"
-    },
-    "entraJwksUri": {
-      "value": "${ENTRA_JWKS_URI=}"
+    "braintreeEnvironment": {
+      "value": "${BRAINTREE_ENVIRONMENT=sandbox}"
     }
   }
 }
