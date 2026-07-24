@@ -60,3 +60,11 @@ struct APIClient: Sendable {
         }
     }
 }
+
+extension APIClient {
+    /// An authenticated client using the configured base URL + the Keychain token.
+    static var shared: APIClient {
+        let keychain = KeychainStore()
+        return APIClient(baseURL: AppConfig.apiBaseURL, tokenProvider: { keychain.token })
+    }
+}

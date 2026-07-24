@@ -27,6 +27,7 @@
 		7F982E2E6D692A0AB1746D5A /* RentalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E8E89CA1AAB682F2440147 /* RentalsView.swift */; };
 		9542F35DC5FDE31A3EC9BEAC /* Fraunces-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */; };
 		97FD2EC1B9B8EA694ECA2D27 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D510BBF3259AD6B08788B2 /* RootTabView.swift */; };
+		9D7497B956D871503C0342EC /* EventsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 36FEB33FDB0AA771010B7CB2 /* EventsService.swift */; };
 		9E186831FA091A0DDF5BACF2 /* APIModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1DE67D704EE2ADE0A44C641E /* APIModels.swift */; };
 		A6BEF2FFF64E69CA6A80C82C /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927350ADDADBE41C2A542113 /* YouView.swift */; };
 		AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2464721EAE8F60BE46678169 /* PlaceholderScreen.swift */; };
@@ -56,6 +57,7 @@
 		255D019A11BB00D494D300FE /* Figtree-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Figtree-OFL.txt"; sourceTree = "<group>"; };
 		2D0C35779F1CAC9D30E3C2C0 /* FoxMillWoods.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = FoxMillWoods.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		36098853752598AE4669B21C /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		36FEB33FDB0AA771010B7CB2 /* EventsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsService.swift; sourceTree = "<group>"; };
 		37A1B0521048CDDDEA2E77C7 /* Figtree-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Figtree-Variable.ttf"; sourceTree = "<group>"; };
 		48CBFE70FC6895DE3176B39E /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		4B3FB576B09367915F9B7787 /* FMWStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMWStyles.swift; sourceTree = "<group>"; };
@@ -178,6 +180,7 @@
 			children = (
 				0F4402BD418E837F8EE2088E /* EventDetailView.swift */,
 				D812360C7B71FDE3FE2289AC /* EventEditorView.swift */,
+				36FEB33FDB0AA771010B7CB2 /* EventsService.swift */,
 				D4AC08CC9B96CF414DAC0526 /* EventsView.swift */,
 			);
 			path = Events;
@@ -388,6 +391,7 @@
 				5B65E30229ACE94FB1E47EAB /* DuesView.swift in Sources */,
 				D6D1460AA10523A4842A7E63 /* EventDetailView.swift in Sources */,
 				74A488590C33E22570D5CC55 /* EventEditorView.swift in Sources */,
+				9D7497B956D871503C0342EC /* EventsService.swift in Sources */,
 				046CA96BCF1F1329719238C2 /* EventsView.swift in Sources */,
 				01704366466EBB9D9C02129B /* FMWStyles.swift in Sources */,
 				20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */,

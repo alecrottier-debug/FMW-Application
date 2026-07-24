@@ -10,6 +10,9 @@ struct EventsView: View {
     // Chevron / trailing glyph tint from the prototype (.evrow .chev = #c7c0af).
     private static let chevron = Color(hex: 0xC7C0AF)
 
+    // Live events replace the samples once the API returns any (demo mode keeps samples).
+    @State private var liveRows: [EventsViewRowData]?
+
     // Upcoming events — sample data copied verbatim from the prototype.
     private let events: [EventsViewRowData] = [
         .init(month: "Jul", day: "22", title: "Float Night at the Pool",
@@ -34,7 +37,7 @@ struct EventsView: View {
                     .padding(.top, 22)
                     .padding(.bottom, 10)
 
-                ForEach(events) { event in
+                ForEach(liveRows ?? events) { event in
                     NavigationLink(value: AppRoute.eventDetail) {
                         EventsViewRow(data: event, chevron: Self.chevron)
                     }
@@ -55,6 +58,33 @@ struct EventsView: View {
         }
         .scrollIndicators(.hidden)
         .background(FMW.cream.ignoresSafeArea())
+        .task { await loadLive() }
+    }
+
+    /// Load real events when the API is configured; otherwise keep the prototype samples.
+    private func loadLive() async {
+        guard AppConfig.isAPIConfigured else { return }
+        guard let summaries = try? await EventsService().list(), !summaries.isEmpty else { return }
+        liveRows = summaries.map { summary in
+            let (month, day) = Self.monthDay(summary.startAt)
+            return EventsViewRowData(
+                month: month, day: day, title: summary.title,
+                detail: summary.audience ?? "Neighborhood event",
+                price: summary.ticketingType == "free" ? "Free" : "Paid",
+                isFree: summary.ticketingType == "free"
+            )
+        }
+    }
+
+    private static func monthDay(_ iso: String) -> (String, String) {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let date = withFraction.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) ?? Date()
+        let fmt = DateFormatter()
+        fmt.dateFormat = "MMM"
+        let month = fmt.string(from: date)
+        fmt.dateFormat = "dd"
+        return (month, fmt.string(from: date))
     }
 
     // MARK: Title block (.pad eyebrow + h2.disp + muted lede)

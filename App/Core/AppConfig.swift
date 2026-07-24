@@ -21,6 +21,10 @@ enum AppConfig {
         !entraClientID.isEmpty && !entraAuthorizeURL.isEmpty && !entraTokenURL.isEmpty
     }
 
+    /// True once a real API base URL is set (otherwise the app stays in demo mode
+    /// and views keep their sample data instead of calling the network).
+    static var isAPIConfigured: Bool { infoString("API_BASE_URL") != nil }
+
     private static func infoString(_ key: String) -> String? {
         (Bundle.main.object(forInfoDictionaryKey: key) as? String).flatMap { $0.isEmpty ? nil : $0 }
     }

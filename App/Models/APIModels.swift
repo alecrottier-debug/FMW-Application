@@ -29,3 +29,38 @@ struct DirectoryEntry: Codable, Identifiable, Hashable {
     let address: String?
     let status: String?
 }
+
+// MARK: - Events
+
+struct EventSummary: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let startAt: String // ISO-8601
+    let endAt: String?
+    let location: String?
+    let audience: String?
+    let ticketingType: String // "free" | "paid"
+    let status: String
+    let itemCount: Int?
+}
+
+struct EventItemDTO: Codable, Identifiable, Hashable {
+    let id: String
+    let name: String
+    let price: Double
+    let limit: Int?
+    let isOptional: Bool
+}
+
+struct EventDetail: Codable, Identifiable, Hashable {
+    let id: String
+    let title: String
+    let startAt: String
+    let endAt: String?
+    let location: String?
+    let audience: String?
+    let description: String?
+    let ticketingType: String
+    let status: String
+    let items: [EventItemDTO]
+}
