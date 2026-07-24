@@ -51,6 +51,22 @@ az keyvault secret set --vault-name <kv> --name stripe-webhook-secret --value wh
 - Set `DEVELOPMENT_TEAM` in `project.yml` and add the **Sign in with Apple** capability.
 - Event tickets / rentals stay **external payment** (not IAP) per App Store 3.1.3/3.1.5.
 
+## 5. Distribute to testers (TestFlight)
+One command: **`scripts/beta.sh`** (archive → export → upload). Prereqs: Developer Program
+membership, an App Store Connect app record for `com.foxmillwoods.app`, and an App Store
+Connect **API key** (Users and Access → Integrations). Then:
+```bash
+export ASC_KEY_ID=XXXXXXXXXX
+export ASC_ISSUER_ID=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+export ASC_KEY_PATH="$HOME/keys/AuthKey_XXXXXXXXXX.p8"
+scripts/beta.sh            # archive + upload to TestFlight
+scripts/beta.sh export     # just build a .ipa (drag into Transporter) if you prefer the GUI
+```
+The build appears in App Store Connect → **TestFlight** after processing; add testers by email
+or turn on the **public link**. Icon (1024, no alpha) and export-compliance are already set.
+For a **meaningful** beta (real login/dues), do steps 1–3 first; otherwise ship the current
+**demo build** for look-and-flow feedback.
+
 ## What's intentionally not done yet
 Pavilion booking payment, receipt scan → Blob upload, dues autopay, and full money-dashboard
 reconciliation endpoints. The models/screens exist; wiring them follows the same patterns above.
