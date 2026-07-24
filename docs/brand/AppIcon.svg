@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <!-- Fox Mill Woods app icon — geometric fox on scalloped waves (brand recreation) -->
+  <rect width="1024" height="1024" fill="#FBFAF3"/>
+
+  <!-- Fox (flat orange, walking right) -->
+  <g fill="#E68A43">
+    <!-- Tail: big sweep up-left over the back -->
+    <path d="M 300 520
+             C 196 470, 168 322, 300 268
+             C 372 240, 420 320, 404 402
+             C 392 462, 344 500, 300 520 Z"/>
+    <!-- Body -->
+    <path d="M 356 388 L 610 372 L 664 452 L 604 540 L 372 540 L 330 452 Z"/>
+    <!-- Ears -->
+    <path d="M 556 388 L 590 270 L 636 388 Z"/>
+    <path d="M 636 384 L 690 288 L 712 392 Z"/>
+    <!-- Snout -->
+    <path d="M 636 420 L 744 452 L 636 492 Z"/>
+    <!-- Legs -->
+    <path d="M 372 536 L 402 536 L 372 720 L 344 720 Z"/>
+    <path d="M 452 540 L 480 540 L 470 720 L 442 720 Z"/>
+    <path d="M 556 540 L 584 540 L 618 720 L 590 720 Z"/>
+    <path d="M 612 520 L 642 520 L 668 700 L 640 700 Z"/>
+  </g>
+
+  <!-- White sock on the front leg -->
+  <path d="M 628 686 L 668 700 L 640 720 L 626 700 Z" fill="#FBFAF3"/>
+
+  <!-- Scalloped waves (round bottom, flat top at y=744) -->
+  <g fill="#C9DEBE">
+    <path d="M 96 744 A 88 88 0 0 1 272 744 Z"/>
+    <path d="M 268 744 A 88 88 0 0 1 444 744 Z"/>
+    <path d="M 440 744 A 88 88 0 0 1 616 744 Z"/>
+    <path d="M 612 744 A 88 88 0 0 1 788 744 Z"/>
+    <path d="M 784 744 A 88 88 0 0 1 960 744 Z"/>
+  </g>
+</svg>
