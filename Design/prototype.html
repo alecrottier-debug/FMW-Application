@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Fox Mill Woods — app prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,800&family=Figtree:wght@400;450;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#FBFAF3;      /* warm paper base */
+  --mint:#EAF4EC;       /* soft green surface */
+  --mint-2:#DBEBDD;
+  --paper:#FFFFFF;
+  --pine:#2E7D63;       /* primary — sampled from FMW logo */
+  --pine-deep:#1B5245;
+  --pine-ink:#143229;
+  --sun:#F2913D;        /* sunset-orange accent */
+  --sun-2:#F8B45E;
+  --coral:#E86F4E;
+  --water:#5FB4AE;      /* pool teal */
+  --line:#E7E1D2;
+  --line-mint:#CFE3D3;
+  --muted:#6E7B70;
+  --danger:#C4553B;
+  --shadow:0 18px 40px -20px rgba(20,50,41,.35);
+  --shadow-sm:0 8px 20px -14px rgba(20,50,41,.45);
+  --r:20px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:"Figtree",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:var(--pine-ink);
+  background:
+    radial-gradient(1200px 800px at 78% -8%, #FFE7C4 0%, rgba(255,231,196,0) 55%),
+    radial-gradient(1000px 700px at 6% 108%, #CFE9D6 0%, rgba(207,233,214,0) 55%),
+    linear-gradient(160deg,#FDF3E3 0%, #EFF6EC 45%, #E4F0EA 100%);
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:26px 16px;gap:14px;
+  -webkit-font-smoothing:antialiased;
+}
+.stage-note{
+  text-align:center;max-width:390px;color:var(--pine-deep);
+}
+.stage-note .brandmark{display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:4px}
+.stage-note h1{font-family:"Fraunces";font-optical-sizing:auto;font-weight:700;font-size:19px;margin:0;letter-spacing:.2px}
+.stage-note p{margin:2px 0 0;font-size:12.5px;color:var(--muted)}
+
+/* Prototype role switch (outside the phone) */
+.role-switch{
+  display:inline-flex;background:rgba(255,255,255,.7);border:1px solid var(--line-mint);
+  border-radius:999px;padding:4px;gap:2px;backdrop-filter:blur(6px);box-shadow:var(--shadow-sm);
+}
+.role-switch button{
+  border:0;background:transparent;font-family:inherit;font-weight:600;font-size:12.5px;color:var(--pine-deep);
+  padding:7px 15px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:6px;transition:.18s;
+}
+.role-switch button .dot{width:7px;height:7px;border-radius:50%;background:currentColor;opacity:.5}
+.role-switch button.on{background:var(--pine);color:#fff;box-shadow:0 6px 14px -6px rgba(46,125,99,.7)}
+.role-switch button.on .dot{opacity:1;background:var(--sun-2)}
+
+/* ---------- device ---------- */
+.device{
+  width:390px;max-width:100%;height:min(844px,88vh);
+  background:#0f231d;border-radius:52px;padding:11px;
+  box-shadow:0 40px 80px -30px rgba(20,50,41,.6), 0 0 0 2px rgba(255,255,255,.35) inset;
+  position:relative;flex:0 0 auto;
+}
+.screen-wrap{
+  position:relative;width:100%;height:100%;background:var(--cream);
+  border-radius:42px;overflow:hidden;display:flex;flex-direction:column;
+}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:132px;height:26px;background:#0f231d;border-radius:0 0 18px 18px;z-index:60}
+.statusbar{height:44px;flex:0 0 auto;display:flex;align-items:flex-end;justify-content:space-between;padding:0 24px 5px;font-size:13px;font-weight:600;color:var(--pine-ink);z-index:55}
+.statusbar .icons{display:flex;gap:6px;align-items:center}
+
+/* scroll area */
+.viewport{flex:1 1 auto;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;position:relative}
+.viewport::-webkit-scrollbar{width:0}
+.screen{display:none;min-height:100%;animation:fade .32s ease}
+.screen.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.screen.active{animation:none}*{transition:none!important}}
+
+/* ---------- shared bits ---------- */
+.pad{padding:0 18px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--pine);display:flex;align-items:center;gap:7px}
+.eyebrow.sun{color:var(--sun)}
+h2.disp{font-family:"Fraunces";font-optical-sizing:auto;font-weight:700;font-size:26px;line-height:1.05;margin:6px 0 0;letter-spacing:.2px}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin:22px 18px 10px}
+.section-head h3{font-family:"Fraunces";font-weight:600;font-size:18px;margin:0}
+.section-head a{font-size:12.5px;font-weight:600;color:var(--pine);text-decoration:none}
+.muted{color:var(--muted)}
+.tnum{font-variant-numeric:tabular-nums}
+
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  font-family:inherit;font-weight:700;font-size:15px;border:0;border-radius:14px;
+  padding:14px 18px;cursor:pointer;width:100%;transition:.16s;
+}
+.btn-primary{background:var(--pine);color:#fff;box-shadow:0 12px 22px -12px rgba(46,125,99,.9)}
+.btn-primary:active{transform:translateY(1px)}
+.btn-sun{background:linear-gradient(180deg,var(--sun-2),var(--sun));color:#3d2410;box-shadow:0 12px 22px -12px rgba(242,145,61,.9)}
+.btn-ghost{background:var(--mint);color:var(--pine-deep)}
+.btn-outline{background:transparent;border:1.5px solid var(--line-mint);color:var(--pine-deep)}
+.btn.sm{padding:10px 14px;font-size:13.5px;width:auto;border-radius:11px}
+
+.card{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-sm);border:1px solid rgba(231,225,210,.7)}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;padding:5px 10px;border-radius:999px}
+.pill-sun{background:#FCEBD6;color:#9a5a15}
+.pill-pine{background:var(--mint);color:var(--pine-deep)}
+.pill-water{background:#DDF0EE;color:#256b66}
+.pill-free{background:#E7F3E9;color:#2b7a4e}
+
+/* icons via simple svg */
+.ico{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+
+/* ---------- HOME ---------- */
+.hero{
+  position:relative;margin:6px 12px 0;border-radius:26px;overflow:hidden;
+  background:linear-gradient(165deg,#FFF4E0 0%, #FCE9CB 42%, #E9F3E7 100%);
+  border:1px solid rgba(242,145,61,.22);
+  padding:18px 18px 20px;
+}
+.hero .sunwash{position:absolute;inset:0;background:radial-gradient(240px 200px at 82% 6%, rgba(248,180,94,.55), rgba(248,180,94,0) 70%);pointer-events:none}
+.hero-brand{display:flex;align-items:center;gap:10px;position:relative}
+.hero-brand .wm{font-family:"Fraunces";font-weight:800;font-size:20px;letter-spacing:.3px;color:var(--pine-deep);line-height:1}
+.hero-brand .tag{font-size:9.5px;font-weight:700;letter-spacing:.22em;color:var(--sun);margin-top:3px}
+.hero .treeline{position:absolute;left:0;right:0;bottom:0;height:34px;opacity:.9}
+.next-label{position:relative;margin-top:16px}
+
+/* ticket-stub signature */
+.stub{
+  position:relative;background:var(--paper);border-radius:18px;margin:10px 12px 0;
+  box-shadow:var(--shadow);overflow:hidden;
+}
+.stub .stub-body{padding:16px 16px 14px}
+.stub .perf{
+  position:relative;border-top:2px dashed var(--line);margin:0 14px;
+}
+.stub .perf::before,.stub .perf::after{
+  content:"";position:absolute;top:-11px;width:20px;height:20px;border-radius:50%;background:var(--cream);
+  box-shadow:inset 0 0 0 1px rgba(231,225,210,.7);
+}
+.stub .perf::before{left:-24px}
+.stub .perf::after{right:-24px}
+.stub .stub-foot{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.stub .kicker{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--sun)}
+.stub h3{font-family:"Fraunces";font-weight:700;font-size:22px;margin:5px 0 3px;line-height:1.05}
+.metarow{display:flex;flex-wrap:wrap;gap:12px;margin-top:9px;color:var(--pine-deep);font-size:13px;font-weight:500}
+.metarow .m{display:flex;align-items:center;gap:6px}
+.metarow .m svg{width:15px;height:15px;stroke:var(--pine);fill:none;stroke-width:1.8}
+
+/* module grid */
+.modgrid{display:grid;grid-template-columns:1fr 1fr;gap:11px;margin:12px 18px 0}
+.mod{
+  border-radius:18px;padding:14px;min-height:104px;position:relative;cursor:pointer;
+  display:flex;flex-direction:column;justify-content:space-between;border:1px solid transparent;transition:.16s;
+}
+.mod:active{transform:scale(.985)}
+.mod .mt{font-family:"Fraunces";font-weight:600;font-size:16px}
+.mod .ms{font-size:11.5px;font-weight:500;opacity:.75;margin-top:2px;line-height:1.25}
+.mod .badge{position:absolute;top:11px;right:11px;font-size:9.5px;font-weight:800;letter-spacing:.06em;padding:3px 7px;border-radius:999px}
+.mod-events{background:linear-gradient(160deg,#EAF4EC,#DCEEDF);color:var(--pine-deep)}
+.mod-events .badge{background:var(--pine);color:#fff}
+.mod-rent{background:linear-gradient(160deg,#FDEBD3,#FBE0BE);color:#7a4a12}
+.mod-rent .badge{background:var(--sun);color:#3d2410}
+.mod-soon{background:#F4F1E7;color:#9a978c;border:1px dashed var(--line)}
+.mod-soon .badge{background:#EDE8DA;color:#8a8676}
+.mod .glyph{width:30px;height:30px;stroke-width:1.7;fill:none}
+
+.notice{display:flex;gap:11px;align-items:flex-start;margin:14px 18px 0;padding:13px 14px;background:var(--mint);border-radius:16px;border:1px solid var(--line-mint)}
+.notice svg{flex:0 0 auto;width:20px;height:20px;stroke:var(--pine);fill:none;stroke-width:1.8;margin-top:1px}
+.notice .nt{font-weight:700;font-size:13.5px}
+.notice .nd{font-size:12.5px;color:var(--muted);margin-top:2px;line-height:1.35}
+
+/* ---------- EVENT LIST ---------- */
+.evrow{display:flex;gap:13px;align-items:center;padding:13px 14px;margin:0 12px 10px;cursor:pointer}
+.evrow:active{transform:scale(.99)}
+.datechip{flex:0 0 auto;width:52px;height:56px;border-radius:14px;background:var(--mint);display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--pine-deep)}
+.datechip .mo{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--sun)}
+.datechip .dy{font-family:"Fraunces";font-weight:700;font-size:22px;line-height:1}
+.evrow .ei{flex:1 1 auto;min-width:0}
+.evrow .ei h4{margin:0;font-family:"Fraunces";font-weight:600;font-size:16px}
+.evrow .ei .sub{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap}
+.evrow .chev{flex:0 0 auto;color:#c7c0af}
+
+/* ---------- EVENT DETAIL ---------- */
+.detail-hero{position:relative;padding:20px 18px 22px;background:linear-gradient(165deg,#FFF3DE,#F8E6C6 55%,#E9F3E7);overflow:hidden}
+.detail-hero .sunwash{position:absolute;inset:0;background:radial-gradient(220px 180px at 85% 8%,rgba(248,180,94,.5),transparent 70%)}
+.backbtn{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.7);border:1px solid var(--line-mint);border-radius:999px;padding:8px 13px 8px 10px;font-weight:600;font-size:13px;color:var(--pine-deep);cursor:pointer}
+.detail-hero h2{font-family:"Fraunces";font-weight:700;font-size:28px;line-height:1.03;margin:14px 0 0;position:relative}
+.infocard{margin:-14px 12px 0;position:relative;padding:4px 4px}
+.inforow{display:flex;align-items:center;gap:13px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.inforow:last-child{border-bottom:0}
+.inforow .ic{width:38px;height:38px;border-radius:11px;background:var(--mint);display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.inforow .ic svg{width:19px;height:19px;stroke:var(--pine);fill:none;stroke-width:1.8}
+.inforow .lbl{font-size:11.5px;color:var(--muted);font-weight:600}
+.inforow .val{font-size:14.5px;font-weight:600;margin-top:1px}
+
+.attendees{display:flex;align-items:center;margin:16px 18px 0}
+.av{width:34px;height:34px;border-radius:50%;border:2px solid var(--cream);margin-left:-9px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#fff}
+.av:first-child{margin-left:0}
+
+.paybar{position:sticky;bottom:0;background:linear-gradient(180deg,rgba(251,250,243,0),var(--cream) 26%);padding:16px 18px 18px;margin-top:8px}
+.rsvp-row{display:flex;gap:10px}
+
+/* ---------- CALENDAR ---------- */
+.filterbar{display:flex;gap:8px;padding:4px 18px 2px;overflow-x:auto}
+.filterbar::-webkit-scrollbar{display:none}
+.chip{flex:0 0 auto;border:1.5px solid var(--line-mint);background:var(--paper);border-radius:999px;padding:8px 14px;font-weight:600;font-size:13px;color:var(--pine-deep);cursor:pointer;display:flex;align-items:center;gap:7px;transition:.15s}
+.chip .cd{width:9px;height:9px;border-radius:50%}
+.chip.on{background:var(--pine-ink);color:#fff;border-color:var(--pine-ink)}
+.chip.on.f-event{background:var(--pine);border-color:var(--pine)}
+.chip.on.f-rental{background:var(--sun);border-color:var(--sun);color:#3d2410}
+.cd-event{background:var(--pine)}
+.cd-rental{background:var(--sun)}
+.cd-pt{background:var(--water)}
+
+.monthgrid{margin:14px 18px 0;background:var(--paper);border-radius:18px;padding:14px 12px 10px;box-shadow:var(--shadow-sm)}
+.monthgrid .mh{display:flex;align-items:center;justify-content:space-between;margin:0 4px 10px}
+.monthgrid .mh b{font-family:"Fraunces";font-weight:600;font-size:16px}
+.dow,.days{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dow span{text-align:center;font-size:10px;font-weight:700;color:var(--muted);padding-bottom:4px}
+.day{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12.5px;font-weight:600;border-radius:10px;position:relative;color:var(--pine-ink)}
+.day.dim{color:#c7c0af}
+.day.today{background:var(--mint)}
+.day .dots{display:flex;gap:2px;margin-top:2px;height:5px}
+.day .dots i{width:5px;height:5px;border-radius:50%}
+.agenda{margin:16px 12px 0}
+.agenda .daygroup{margin-bottom:6px}
+.agenda .dhead{font-size:11.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:14px 6px 6px}
+.aitem{display:flex;gap:12px;align-items:center;padding:12px 14px;margin:0 0 8px}
+.aitem .bar{width:4px;align-self:stretch;border-radius:4px}
+.aitem.event .bar{background:var(--pine)} .aitem.rental .bar{background:var(--sun)}
+.aitem .ai h4{margin:0;font-weight:600;font-size:14.5px;font-family:"Fraunces"}
+.aitem .ai .as{font-size:12px;color:var(--muted);margin-top:2px}
+.aitem .tag{font-size:10px;font-weight:800;padding:3px 8px;border-radius:999px}
+.aitem.event .tag{background:var(--mint);color:var(--pine-deep)} .aitem.rental .tag{background:#FCEBD6;color:#9a5a15}
+.hide{display:none!important}
+
+/* ---------- WALLET ---------- */
+.wtabs{display:flex;gap:6px;margin:6px 18px 0;background:var(--mint);padding:5px;border-radius:14px}
+.wtabs button{flex:1;border:0;background:transparent;padding:10px;border-radius:10px;font-family:inherit;font-weight:700;font-size:13.5px;color:var(--pine-deep);cursor:pointer}
+.wtabs button.on{background:var(--paper);box-shadow:var(--shadow-sm)}
+.balancecard{margin:14px 12px 0;padding:18px;background:linear-gradient(160deg,var(--pine),var(--pine-deep));color:#fff;border-radius:22px;position:relative;overflow:hidden}
+.balancecard .sun{position:absolute;top:-30px;right:-20px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(248,180,94,.5),transparent 70%)}
+.balancecard .lbl{font-size:12px;font-weight:600;opacity:.85}
+.balancecard .amt{font-family:"Fraunces";font-weight:700;font-size:34px;margin-top:3px}
+.myticket{margin:8px 12px 0}
+
+/* committee money dashboard */
+.selectbar{margin:14px 12px 0;display:flex;align-items:center;gap:10px;padding:12px 14px}
+.selectbar .lbl{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.06em;text-transform:uppercase}
+.selectbar select{margin-left:auto;font-family:inherit;font-weight:700;font-size:14px;border:0;background:var(--mint);padding:8px 12px;border-radius:10px;color:var(--pine-deep)}
+.moneytop{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;margin:12px 12px 0;padding:16px}
+.ring{width:96px;height:96px;border-radius:50%;display:grid;place-items:center;flex:0 0 auto;
+  background:conic-gradient(var(--pine) 0 51%, var(--sun) 51% 70%, var(--mint-2) 70% 100%);}
+.ring .hole{width:72px;height:72px;border-radius:50%;background:var(--paper);display:grid;place-items:center;text-align:center}
+.ring .hole b{font-family:"Fraunces";font-size:18px;font-weight:700;line-height:1}
+.ring .hole span{font-size:9.5px;color:var(--muted);font-weight:700}
+.legend{display:flex;flex-direction:column;gap:8px}
+.legend .lr{display:flex;align-items:center;gap:8px;font-size:13px}
+.legend .lr .sw{width:10px;height:10px;border-radius:3px}
+.legend .lr b{margin-left:auto;font-variant-numeric:tabular-nums}
+
+.subhead{display:flex;align-items:center;justify-content:space-between;margin:20px 18px 8px}
+.subhead h3{font-family:"Fraunces";font-weight:600;font-size:16px;margin:0}
+.srcrow{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 12px 8px}
+.srcrow .si{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;flex:0 0 auto;font-weight:800;font-size:12px;color:#fff}
+.si-card{background:#635BFF}.si-venmo{background:#008CFF}.si-cash{background:var(--pine)}.si-check{background:var(--muted)}
+.srcrow .sn{font-weight:600;font-size:14px}
+.srcrow .amt{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+
+.person{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 12px 8px}
+.person .pav{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:14px;flex:0 0 auto}
+.person .pn{font-weight:600;font-size:14.5px}
+.person .pp{font-size:12px;color:var(--muted);margin-top:1px}
+.person .owed{margin-left:auto;text-align:right}
+.person .owed b{font-weight:800;font-variant-numeric:tabular-nums;color:var(--danger)}
+.person .owed span{display:block;font-size:10px;color:var(--muted);font-weight:700;letter-spacing:.04em}
+
+.scanfab{position:sticky;bottom:14px;margin:16px 18px 4px}
+
+/* ---------- SCAN ---------- */
+.scanview{background:#0f231d;min-height:100%;display:flex;flex-direction:column;color:#fff}
+.scanview .shead{padding:8px 18px;display:flex;align-items:center;gap:12px}
+.scanview .shead .backbtn{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#fff}
+.camera{margin:6px 16px;flex:1 1 auto;border-radius:22px;background:
+  repeating-linear-gradient(115deg,#20463a 0 22px,#1c3e33 22px 44px);
+  position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;min-height:300px}
+.receipt-ghost{width:150px;background:#fbfaf3;border-radius:6px;transform:rotate(-3deg);padding:14px 12px;box-shadow:0 20px 40px -10px rgba(0,0,0,.5);color:#3a3a3a}
+.receipt-ghost .rl{height:7px;background:#e5e0d4;border-radius:3px;margin-bottom:7px}
+.receipt-ghost .rl.s{width:60%} .receipt-ghost .rl.m{width:85%} .receipt-ghost .rl.big{height:12px;width:70%;background:#cfc8b8;margin-top:12px}
+.reticle{position:absolute;inset:34px;border-radius:16px;box-shadow:0 0 0 2px rgba(248,180,94,.9), 0 0 0 9999px rgba(15,35,29,.35)}
+.reticle .corner{position:absolute;width:22px;height:22px;border:3px solid var(--sun-2)}
+.reticle .c1{top:-2px;left:-2px;border-right:0;border-bottom:0;border-radius:10px 0 0 0}
+.reticle .c2{top:-2px;right:-2px;border-left:0;border-bottom:0;border-radius:0 10px 0 0}
+.reticle .c3{bottom:-2px;left:-2px;border-right:0;border-top:0;border-radius:0 0 0 10px}
+.reticle .c4{bottom:-2px;right:-2px;border-left:0;border-top:0;border-radius:0 0 10px 0}
+.sweep{position:absolute;left:34px;right:34px;height:3px;background:linear-gradient(90deg,transparent,var(--sun-2),transparent);box-shadow:0 0 16px 3px rgba(248,180,94,.6);top:34px;animation:sweep 1.9s ease-in-out infinite}
+@keyframes sweep{0%,100%{top:44px}50%{top:calc(100% - 46px)}}
+.scanview .sfoot{padding:16px 18px 22px;text-align:center}
+.scanview .shint{font-size:13px;opacity:.8;margin-bottom:12px}
+.shutter{width:64px;height:64px;border-radius:50%;background:#fff;border:5px solid rgba(255,255,255,.4);margin:0 auto;cursor:pointer}
+
+/* parsed sheet */
+.parsed{padding:6px 4px 0}
+.parsed .flash{display:flex;align-items:center;gap:8px;justify-content:center;color:var(--pine);font-weight:700;font-size:13px;margin:8px 0 14px}
+.field{margin:0 14px 12px}
+.field label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:5px}
+.field .fv{background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;font-weight:600;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+.field .fv .edit{font-size:11px;color:var(--pine);font-weight:700}
+.field.parsed-hit .fv{border-color:var(--line-mint);background:#F5FBF6}
+.chipset{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.selchip{border:1.5px solid var(--line-mint);background:var(--paper);border-radius:10px;padding:9px 12px;font-weight:600;font-size:13px;cursor:pointer;color:var(--pine-deep)}
+.selchip.on{background:var(--pine);color:#fff;border-color:var(--pine)}
+
+/* ---------- YOU ---------- */
+.profhead{padding:22px 18px 8px;text-align:center}
+.profhead .pfav{width:76px;height:76px;border-radius:50%;margin:0 auto 10px;background:linear-gradient(160deg,var(--sun-2),var(--coral));display:grid;place-items:center;color:#fff;font-family:"Fraunces";font-weight:700;font-size:30px;box-shadow:var(--shadow-sm)}
+.profhead h2{font-family:"Fraunces";font-weight:700;font-size:22px;margin:0}
+.rolechip{display:inline-flex;align-items:center;gap:7px;margin-top:8px;padding:6px 13px;border-radius:999px;background:var(--mint);color:var(--pine-deep);font-weight:700;font-size:12.5px}
+.listcard{margin:16px 12px 0;overflow:hidden}
+.lrow{display:flex;align-items:center;gap:13px;padding:14px 15px;border-bottom:1px solid var(--line)}
+.lrow:last-child{border-bottom:0}
+.lrow .li{width:36px;height:36px;border-radius:10px;background:var(--mint);display:grid;place-items:center;flex:0 0 auto}
+.lrow .li svg{width:18px;height:18px;stroke:var(--pine);fill:none;stroke-width:1.8}
+.lrow .lt{font-weight:600;font-size:14.5px}
+.lrow .ls{font-size:12px;color:var(--muted);margin-top:1px}
+.lrow .lc{margin-left:auto;color:#c7c0af}
+.conn{margin-left:auto;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;color:var(--pine)}
+.conn .dotg{width:7px;height:7px;border-radius:50%;background:var(--pine)}
+
+/* ---------- AUTH ---------- */
+.auth{min-height:100%;display:flex;flex-direction:column;justify-content:space-between;
+  background:
+   radial-gradient(320px 260px at 80% 4%, rgba(248,180,94,.55), transparent 65%),
+   linear-gradient(170deg,#FDF3E3,#EAF4EC 60%,#DDF0EE);
+  padding:0 0 26px}
+.auth .top{padding:60px 26px 0;text-align:center}
+.auth .logo-badge{width:120px;height:120px;border-radius:50%;background:var(--mint);margin:0 auto 20px;display:grid;place-items:center;box-shadow:var(--shadow-sm);border:1px solid var(--line-mint)}
+.auth h1{font-family:"Fraunces";font-weight:800;font-size:30px;margin:0;letter-spacing:.3px;color:var(--pine-deep);line-height:1.05}
+.auth .tag{font-size:11px;font-weight:800;letter-spacing:.24em;color:var(--sun);margin-top:8px}
+.auth .blurb{color:var(--pine-deep);font-size:14.5px;margin:14px auto 0;max-width:250px;line-height:1.4;opacity:.85}
+.auth .bottom{padding:0 22px}
+.signbtn{width:100%;border:0;border-radius:15px;padding:15px;font-family:inherit;font-weight:600;font-size:15.5px;display:flex;align-items:center;justify-content:center;gap:10px;cursor:pointer;margin-bottom:11px}
+.sign-apple{background:#000;color:#fff}
+.sign-google{background:#fff;color:#3c4043;border:1px solid #dadce0}
+.auth .fine{text-align:center;font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
+
+/* ---------- TAB BAR ---------- */
+.tabbar{flex:0 0 auto;display:flex;background:rgba(255,255,255,.92);backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:9px 6px calc(9px + env(safe-area-inset-bottom));z-index:50}
+.tab{flex:1;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;gap:3px;padding:5px 0;cursor:pointer;color:var(--muted);font-family:inherit;font-weight:600;font-size:10.5px}
+.tab svg{width:23px;height:23px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.tab.on{color:var(--pine)}
+.tab.on svg{stroke:var(--pine)}
+.tab .fillon{display:none}
+.tab.on .fillon{display:block}
+.tab.on .filloff{display:none}
+
+/* role-gating: resident (base) ⊂ event coordinator ⊂ board member */
+.committee-only,.board-only{display:none}
+body.role-coordinator .committee-only,
+body.role-board .committee-only{display:block}
+body.role-board .board-only{display:block}
+body.role-board .hide-board{display:none}
+/* gated flex containers & chips need their real display value, not block */
+body.role-coordinator .statbar.committee-only,
+body.role-board .statbar.committee-only,
+body.role-coordinator .filterbar.committee-only,
+body.role-board .filterbar.committee-only{display:flex}
+body.role-board .chip.board-only{display:flex}
+/* explicit hide — .statbar/.filterbar are declared later, so they'd win on source order */
+body.role-resident .statbar.committee-only,
+body.role-resident .filterbar.committee-only,
+body.role-coordinator .statbar.resident-only,
+body.role-board .statbar.resident-only{display:none}
+body.role-coordinator .schip.committee-only,
+body.role-board .schip.committee-only,
+body.role-board .schip.board-only{display:inline-block}
+body.role-coordinator .resident-only,
+body.role-board .resident-only{display:none}
+.only-res,.only-coord,.only-board{display:none}
+body.role-resident .only-res{display:inline-flex}
+body.role-coordinator .only-coord{display:inline-flex}
+body.role-board .only-board{display:inline-flex}
+.tinput{width:100%;background:var(--paper);border:1.5px solid var(--line);border-radius:12px;padding:12px 13px;font-family:inherit;font-weight:600;font-size:15px;color:var(--pine-ink)}
+.tinput::placeholder{color:#b8b2a3;font-weight:500}
+textarea.tinput{resize:none;min-height:76px;line-height:1.4}
+.frow{display:flex;gap:10px}.frow .field{flex:1}
+
+/* ---- ticket items (event editor + checkout) ---- */
+.itemcard{margin:0 14px 10px;padding:13px 14px;border-radius:16px;background:var(--paper);border:1.5px solid var(--line);box-shadow:var(--shadow-sm)}
+.itemcard .ih{display:flex;align-items:center;gap:10px}
+.itemcard .ih .nm{font-weight:700;font-size:14.5px;flex:1}
+.itemcard .ih .px{font-weight:800;font-variant-numeric:tabular-nums;color:var(--pine-deep)}
+.itemcard .isub{font-size:12px;color:var(--muted);margin-top:3px}
+.itemcard .del{color:#c0b8a6;font-weight:800;font-size:16px;cursor:pointer;padding:0 2px}
+.additem{margin:2px 14px 14px;padding:12px;border-radius:14px;border:1.5px dashed var(--line-mint);background:var(--mint);color:var(--pine-deep);font-weight:700;font-size:13.5px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer}
+.itemedit{display:grid;grid-template-columns:1fr 84px;gap:8px;margin-top:10px}
+.itemedit input{background:var(--cream);border:1.5px solid var(--line);border-radius:10px;padding:9px 11px;font-family:inherit;font-weight:600;font-size:13.5px;color:var(--pine-ink);width:100%}
+
+/* quantity stepper */
+.stepper{display:flex;align-items:center;gap:11px}
+.stepper button{width:30px;height:30px;border-radius:9px;border:1.5px solid var(--line-mint);background:var(--paper);color:var(--pine);font-size:17px;font-weight:700;font-family:inherit;cursor:pointer;line-height:1;display:grid;place-items:center}
+.stepper button:disabled{opacity:.35;cursor:default}
+.stepper .qty{min-width:16px;text-align:center;font-weight:800;font-variant-numeric:tabular-nums;font-size:15px}
+.totalbar{display:flex;align-items:baseline;justify-content:space-between;margin:14px 18px 0;padding-top:13px;border-top:2px dashed var(--line)}
+.totalbar .tl{font-weight:700;font-size:14px}
+.totalbar .tv{font-family:"Fraunces";font-weight:700;font-size:24px;font-variant-numeric:tabular-nums}
+
+/* sales-by-item + who-paid rows */
+.itemrow{display:flex;align-items:center;gap:12px;padding:12px 14px;margin:0 12px 8px}
+.itemrow .bar2{width:4px;align-self:stretch;border-radius:4px;background:var(--pine)}
+.itemrow .qtytag{font-size:11px;font-weight:800;color:var(--muted);letter-spacing:.04em}
+.itemrow .amt{margin-left:auto;font-weight:700;font-variant-numeric:tabular-nums}
+.paidwhat{padding:12px 14px;margin:0 12px 8px}
+.paidwhat .pw-h{display:flex;align-items:center;gap:11px}
+.paidwhat .lines{margin:9px 0 0 48px;display:flex;flex-direction:column;gap:4px}
+.paidwhat .ln{display:flex;font-size:12.5px;color:var(--muted);font-weight:600}
+.paidwhat .ln .lnv{margin-left:auto;font-variant-numeric:tabular-nums;color:var(--pine-deep)}
+
+/* directory */
+.statbar{display:flex;gap:9px;margin:14px 12px 0}
+.statbar .st{flex:1;padding:12px 10px;border-radius:14px;text-align:center;background:var(--paper);box-shadow:var(--shadow-sm);border:1px solid rgba(231,225,210,.7)}
+.statbar .st b{display:block;font-family:"Fraunces";font-weight:700;font-size:20px;line-height:1.1;font-variant-numeric:tabular-nums}
+.statbar .st span{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--muted)}
+.statbar .st.paid b{color:var(--pine)} .statbar .st.unpaid b{color:var(--danger)}
+.sortrow{display:flex;align-items:center;gap:8px;margin:14px 18px 4px;font-size:12px;font-weight:700;color:var(--muted)}
+.sortrow .sortchips{display:flex;gap:7px;overflow-x:auto}
+.sortrow .sortchips::-webkit-scrollbar{display:none}
+.schip{flex:0 0 auto;border:1.5px solid var(--line-mint);background:var(--paper);border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;color:var(--pine-deep);cursor:pointer}
+.schip.on{background:var(--pine-ink);color:#fff;border-color:var(--pine-ink)}
+.pill-unpaid{background:#FBE3DC;color:#9c3f27}
+.pill-pending{background:#F0EBDA;color:#8a7a44}
+
+/* compact directory rows + A-Z index */
+.mrow{display:flex;align-items:center;gap:11px;padding:9px 13px;margin:0 12px 5px;cursor:pointer}
+.mrow .mi{flex:1;min-width:0}
+.mrow .mn{font-weight:600;font-size:14px;display:flex;align-items:center;gap:6px}
+.mrow .mn .rtag{font-size:9px;font-weight:800;letter-spacing:.06em;padding:2px 6px;border-radius:5px}
+.mrow .ma{font-size:11.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrow .dot-due{width:9px;height:9px;border-radius:50%;flex:0 0 auto}
+.mrow .duetag{font-size:10px;font-weight:800;letter-spacing:.03em;flex:0 0 auto}
+.dsec{font-family:"Fraunces";font-weight:700;font-size:12px;color:var(--pine);margin:12px 24px 5px;letter-spacing:.06em}
+#dir-list{padding-right:20px}
+.azindex{position:absolute;right:3px;top:96px;bottom:82px;width:17px;display:none;flex-direction:column;align-items:center;justify-content:center;gap:0;z-index:45}
+.azindex button{border:0;background:transparent;font-family:inherit;font-size:9.5px;font-weight:800;color:var(--pine);line-height:1.02;padding:0;cursor:pointer;width:17px;opacity:.75}
+.azindex button:active{opacity:1;transform:scale(1.4)}
+
+/* dues */
+.duescard{margin:14px 12px 0;padding:18px;border-radius:22px;position:relative;overflow:hidden;color:#fff;
+  background:linear-gradient(160deg,var(--pine),var(--pine-deep))}
+.duescard.owing{background:linear-gradient(160deg,#E0673F,#B8452C)}
+.duescard .sun{position:absolute;top:-30px;right:-20px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(248,180,94,.45),transparent 70%)}
+.duescard .dl{font-size:12px;font-weight:700;opacity:.9;letter-spacing:.04em;text-transform:uppercase}
+.duescard .dv{font-family:"Fraunces";font-weight:700;font-size:30px;margin-top:4px}
+.duescard .dsubtxt{font-size:12.5px;opacity:.9;margin-top:3px}
+.methodcard{margin:0 14px 10px;padding:14px;border-radius:16px;background:var(--paper);border:2px solid var(--line);cursor:pointer;transition:.15s}
+.methodcard.on{border-color:var(--pine);background:#F5FBF6}
+.methodcard .mh2{display:flex;align-items:center;gap:11px}
+.methodcard .mlogo{width:38px;height:38px;border-radius:11px;display:grid;place-items:center;flex:0 0 auto}
+.methodcard .mt2{font-weight:700;font-size:14.5px}
+.methodcard .ms2{font-size:12px;color:var(--muted);margin-top:2px}
+.methodcard .badge2{margin-left:auto;font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:999px;background:var(--mint);color:var(--pine-deep)}
+.mandate{margin:2px 16px 0;font-size:11px;line-height:1.45;color:var(--muted)}
+
+/* toast */
+.toast{position:absolute;left:50%;bottom:96px;transform:translateX(-50%) translateY(20px);background:var(--pine-ink);color:#fff;padding:12px 18px;border-radius:14px;font-weight:600;font-size:13.5px;box-shadow:var(--shadow);opacity:0;pointer-events:none;transition:.28s;z-index:80;display:flex;align-items:center;gap:9px;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast svg{width:18px;height:18px;stroke:var(--sun-2);fill:none;stroke-width:2}
+
+@media (max-width:440px){
+  body{padding:0;background:var(--cream)}
+  .device{width:100%;height:100vh;height:100dvh;border-radius:0;padding:0;box-shadow:none}
+  .screen-wrap{border-radius:0}
+  .notch{display:none}
+  .stage-note,.role-switch{display:none}
+}
+</style>
+</head>
+<body class="role-resident">
+
+<!-- prototype-only controls (hidden on phone width) -->
+<div class="stage-note">
+  <div class="brandmark">
+    <svg width="26" height="26" viewBox="0 0 40 40" aria-hidden="true"><path d="M8 22c2-1 4 0 6 1s5 1 7-1M8 27c2-1 4 0 6 1s5 1 7-1" stroke="#2E7D63" stroke-width="2.4" fill="none" stroke-linecap="round"/><path d="M20 8l4 5-2 4h-6l-2-4z" fill="#F2913D"/><circle cx="18" cy="14" r="1" fill="#fff"/></svg>
+    <h1>Fox Mill Woods</h1>
+  </div>
+  <p>Interactive prototype · flip roles: Resident · Event Coordinator · Board Member</p>
+</div>
+<div class="role-switch" role="tablist" aria-label="Preview role">
+  <button id="rs-res" class="on" onclick="setRole('resident')"><span class="dot"></span>Resident</button>
+  <button id="rs-coord" onclick="setRole('coordinator')"><span class="dot"></span>Coordinator</button>
+  <button id="rs-board" onclick="setRole('board')"><span class="dot"></span>Board</button>
+</div>
+
+<div class="device">
+  <div class="screen-wrap">
+    <div class="notch"></div>
+    <div class="statusbar">
+      <span>9:41</span>
+      <span class="icons">
+        <svg width="17" height="12" viewBox="0 0 18 12" fill="none"><rect x="0" y="7" width="3" height="5" rx="1" fill="#143229"/><rect x="4.5" y="4.5" width="3" height="7.5" rx="1" fill="#143229"/><rect x="9" y="2" width="3" height="10" rx="1" fill="#143229"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="#143229"/></svg>
+        <svg width="22" height="12" viewBox="0 0 24 12" fill="none"><rect x="1" y="1" width="19" height="10" rx="3" stroke="#143229" stroke-width="1.2"/><rect x="2.5" y="2.5" width="14" height="7" rx="1.5" fill="#143229"/><rect x="21" y="4" width="2" height="4" rx="1" fill="#143229"/></svg>
+      </span>
+    </div>
+
+    <div class="viewport" id="viewport">
+
+      <!-- ================= AUTH ================= -->
+      <section class="screen active" data-screen="auth">
+        <div class="auth">
+          <div class="top">
+            <div class="logo-badge">
+              <svg width="72" height="72" viewBox="0 0 40 40" aria-hidden="true">
+                <path d="M20 7l5 6-2.5 4.5h-5L15 13z" fill="#F2913D"/>
+                <path d="M15 13l-3-3 1 5M25 13l3-3-1 5" stroke="#F2913D" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+                <circle cx="18.3" cy="13.5" r="1" fill="#fff"/><circle cx="21.7" cy="13.5" r="1" fill="#fff"/>
+                <path d="M7 24c2.2-1.4 4.4-1.4 6.6 0s4.4 1.4 6.6 0 4.4-1.4 6.6 0M7 29c2.2-1.4 4.4-1.4 6.6 0s4.4 1.4 6.6 0 4.4-1.4 6.6 0" stroke="#2E7D63" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <h1>Fox Mill Woods</h1>
+            <div class="tag">CONNECT · PLAY · GROW</div>
+            <p class="blurb">Your neighborhood’s events, rentals, and everything ahead — in one place.</p>
+          </div>
+          <div class="bottom">
+            <button class="signbtn sign-apple" onclick="go('home')">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="#fff"><path d="M17.05 12.6c-.03-2.3 1.88-3.4 1.96-3.46-1.07-1.56-2.73-1.78-3.32-1.8-1.41-.14-2.76.83-3.48.83-.72 0-1.82-.81-3-.79-1.54.02-2.96.9-3.75 2.28-1.6 2.78-.41 6.9 1.15 9.16.76 1.1 1.67 2.35 2.86 2.3 1.15-.05 1.58-.74 2.97-.74 1.39 0 1.78.74 3 .72 1.24-.02 2.02-1.13 2.78-2.24.87-1.28 1.23-2.52 1.25-2.58-.03-.01-2.4-.92-2.42-3.65zM14.9 5.5c.64-.78 1.07-1.86.95-2.94-.92.04-2.03.61-2.69 1.38-.59.69-1.11 1.79-.97 2.85 1.02.08 2.07-.52 2.71-1.29z"/></svg>
+              Sign in with Apple
+            </button>
+            <button class="signbtn sign-google" onclick="go('home')">
+              <svg width="17" height="17" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 01-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84A11 11 0 0012 23z"/><path fill="#FBBC05" d="M5.84 14.1a6.6 6.6 0 010-4.2V7.06H2.18a11 11 0 000 9.88l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1A11 11 0 002.18 7.06l3.66 2.84C6.71 7.3 9.14 5.38 12 5.38z"/></svg>
+              Sign in with Google
+            </button>
+            <p class="fine">By continuing you agree to the Fox Mill Woods community guidelines.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= HOME ================= -->
+      <section class="screen" data-screen="home">
+        <div class="hero">
+          <div class="sunwash"></div>
+          <div class="hero-brand">
+            <div>
+              <div class="wm">Fox Mill Woods</div>
+              <div class="tag">CONNECT · PLAY · GROW</div>
+            </div>
+            <div style="margin-left:auto"><span class="pill pill-sun">Summer ’26</span></div>
+          </div>
+          <div class="next-label"><span class="eyebrow sun">◆ Happening today</span></div>
+          <svg class="treeline" viewBox="0 0 390 34" preserveAspectRatio="none"><path d="M0 34 Q 20 10 40 34 Q 60 12 80 34 Q 100 8 120 34 Q 140 14 160 34 Q 180 10 200 34 Q 220 12 240 34 Q 260 8 280 34 Q 300 14 320 34 Q 340 10 360 34 Q 380 12 390 34 Z" fill="#2E7D63" opacity=".14"/></svg>
+        </div>
+
+        <!-- next-event ticket stub -->
+        <div class="stub" onclick="openEvent('float')">
+          <div class="stub-body">
+            <div class="kicker">The Crooked Fox Collective</div>
+            <h3>Float Night at the Pool</h3>
+            <div class="metarow">
+              <span class="m"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Wed, Jul 22 · 5:00 PM</span>
+              <span class="m"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.7-7-11a7 7 0 0114 0c0 5.3-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg> Black Fir Ct Pool</span>
+            </div>
+          </div>
+          <div class="perf"></div>
+          <div class="stub-foot">
+            <span class="pill pill-free">● Free · RSVP</span>
+            <span class="btn btn-primary sm">RSVP →</span>
+          </div>
+        </div>
+
+        <div class="section-head"><h3>What’s in the neighborhood</h3></div>
+        <div class="modgrid">
+          <div class="mod mod-events" onclick="go('events')">
+            <span class="badge">LIVE</span>
+            <svg class="glyph" viewBox="0 0 24 24" stroke="#2E7D63"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4" stroke-linecap="round"/><circle cx="12" cy="15" r="2.2" fill="#F2913D" stroke="none"/></svg>
+            <div><div class="mt">Events</div><div class="ms">RSVP & pay for socials</div></div>
+          </div>
+          <div class="mod mod-rent" onclick="go('rentals')">
+            <span class="badge">LIVE</span>
+            <svg class="glyph" viewBox="0 0 24 24" stroke="#E88A2E"><path d="M4 11l8-6 8 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10v9h12v-9M9 19v-5h6v5" stroke-linecap="round"/></svg>
+            <div><div class="mt">Rent the Pavilion</div><div class="ms">Book an open date</div></div>
+          </div>
+          <div class="mod mod-events" onclick="go('directory')">
+            <span class="badge">LIVE</span>
+            <svg class="glyph" viewBox="0 0 24 24" stroke="#2E7D63"><path d="M4 18v-2a4 4 0 014-4h0M16 12a4 4 0 014 4v2" stroke-linecap="round"/><circle cx="8" cy="8" r="2.4"/><circle cx="16" cy="8" r="2.4" fill="#F2913D" stroke="none"/></svg>
+            <div><div class="mt">Directory</div><div class="ms">Find a neighbor</div></div>
+          </div>
+          <div class="mod mod-rent" onclick="go('pool')">
+            <span class="badge">LIVE</span>
+            <svg class="glyph" viewBox="0 0 24 24" stroke="#E88A2E"><path d="M4 15c3-1 5-1 8 0s5 1 8 0M4 19c3-1 5-1 8 0s5 1 8 0" stroke-linecap="round"/><path d="M9 9a3 3 0 116 0" stroke-linecap="round"/></svg>
+            <div><div class="mt">Pool &amp; Tennis</div><div class="ms">Today's hours</div></div>
+          </div>
+        </div>
+
+        <div class="notice">
+          <svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9L2.4 18a2 2 0 001.7 3h15.8a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>
+          <div><div class="nt">Pool closes at 4 PM Saturday</div><div class="nd">Setup for the Relay Carnival. Deck reopens Sunday at 10 AM.</div></div>
+        </div>
+        <div style="height:26px"></div>
+      </section>
+
+      <!-- ================= EVENTS ================= -->
+      <section class="screen" data-screen="events">
+        <div class="pad" style="padding-top:14px">
+          <span class="eyebrow">◆ The Crooked Fox Collective</span>
+          <h2 class="disp">Events</h2>
+          <p class="muted" style="font-size:13.5px;margin:6px 0 0">Neighborhood socials, all summer and into the fall.</p>
+        </div>
+
+        <div class="section-head"><h3>Upcoming</h3><a onclick="go('wallet')">My tickets →</a></div>
+
+        <div class="card evrow" onclick="openEvent('float')">
+          <div class="datechip"><span class="mo">Jul</span><span class="dy">22</span></div>
+          <div class="ei"><h4>Float Night at the Pool</h4><div class="sub"><span>5:00 PM</span>·<span class="pill pill-free">Free</span></div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="card evrow" onclick="openEvent('social')">
+          <div class="datechip"><span class="mo">Aug</span><span class="dy">09</span></div>
+          <div class="ei"><h4>Summer Sunset Social</h4><div class="sub"><span>7:00 PM · Adults</span>·<span class="pill pill-sun">$35</span></div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="card evrow" onclick="openEvent('luau')">
+          <div class="datechip"><span class="mo">Aug</span><span class="dy">30</span></div>
+          <div class="ei"><h4>End-of-Summer Luau</h4><div class="sub"><span>6:00 PM · Family</span>·<span class="pill pill-sun">$20</span></div></div>
+          <div class="chev">›</div>
+        </div>
+        <div class="card evrow" onclick="openEvent('chili')">
+          <div class="datechip"><span class="mo">Oct</span><span class="dy">11</span></div>
+          <div class="ei"><h4>Fall Chili Cook-off</h4><div class="sub"><span>4:00 PM · Household</span>·<span class="pill pill-sun">$15</span></div></div>
+          <div class="chev">›</div>
+        </div>
+
+        <div class="committee-only" style="margin:22px 12px 0">
+          <div class="card" style="padding:15px;display:flex;align-items:center;gap:12px;background:var(--mint);border:1px dashed var(--line-mint);cursor:pointer" onclick="go('event-editor')">
+            <svg width="22" height="22" viewBox="0 0 24 24" stroke="#2E7D63" fill="none" stroke-width="1.8"><path d="M12 5v14M5 12h14" stroke-linecap="round"/></svg>
+            <div style="flex:1"><div style="font-weight:700;font-size:14px">Plan a new event</div><div style="font-size:12px;color:var(--muted)">Coordinator tools · budget, tickets, expenses</div></div>
+            <span class="btn btn-primary sm">New →</span>
+          </div>
+        </div>
+        <div style="height:24px"></div>
+      </section>
+
+      <!-- ================= EVENT DETAIL ================= -->
+      <section class="screen" data-screen="event">
+        <div class="detail-hero">
+          <div class="sunwash"></div>
+          <button class="backbtn" onclick="go('events')">‹ Events</button>
+          <span class="kicker" style="display:block;margin-top:14px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">THE CROOKED FOX COLLECTIVE</span>
+          <h2 id="ev-title">Event</h2>
+        </div>
+        <div class="card infocard">
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+            <div><div class="lbl">When</div><div class="val" id="ev-when">—</div></div>
+          </div>
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s-7-5.7-7-11a7 7 0 0114 0c0 5.3-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></div>
+            <div><div class="lbl">Where</div><div class="val">Black Fir Court Pool & Pavilion</div></div>
+          </div>
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+            <div><div class="lbl">Cost</div><div class="val" id="ev-cost">—</div></div>
+          </div>
+        </div>
+
+        <div class="pad" style="margin-top:18px">
+          <p id="ev-desc" class="muted" style="font-size:14px;line-height:1.5;margin:0">—</p>
+        </div>
+
+        <div class="section-head"><h3>Who’s coming</h3><a>32 going →</a></div>
+        <div class="attendees">
+          <span class="av" style="background:#E86F4E">SM</span>
+          <span class="av" style="background:#2E7D63">JL</span>
+          <span class="av" style="background:#5FB4AE">DR</span>
+          <span class="av" style="background:#F2913D">KW</span>
+          <span class="av" style="background:#8a7cc9">AB</span>
+          <span class="av" style="background:var(--pine-deep)">+27</span>
+        </div>
+
+        <div id="items-section" class="hide">
+          <div class="section-head"><h3>Choose what you're paying for</h3></div>
+          <div id="items-picker"></div>
+          <div class="totalbar"><span class="tl">Your total</span><span class="tv" id="cart-total">$0.00</span></div>
+        </div>
+
+        <div class="paybar">
+          <div class="rsvp-row" id="rsvp-free">
+            <button class="btn btn-outline" style="flex:0 0 46%" onclick="toast('Maybe next time noted')">Can’t make it</button>
+            <button class="btn btn-primary" style="flex:1" onclick="rsvpDone()">Count me in →</button>
+          </div>
+          <div class="rsvp-row hide" id="rsvp-paid">
+            <button class="btn btn-sun" style="flex:1" onclick="payDone()">
+              <svg width="18" height="18" viewBox="0 0 24 24" stroke="#3d2410" fill="none" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+              <span id="pay-label">Pay & reserve</span>
+            </button>
+          </div>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ================= CALENDAR ================= -->
+      <section class="screen" data-screen="calendar">
+        <div class="pad" style="padding-top:14px">
+          <span class="eyebrow">▤ Neighborhood</span>
+          <h2 class="disp">Calendar</h2>
+        </div>
+        <div style="height:12px"></div>
+        <div class="filterbar">
+          <button class="chip on" data-filter="all" onclick="setFilter('all')">All</button>
+          <button class="chip on f-event" data-filter="event" onclick="setFilter('event')"><span class="cd cd-event"></span>Events</button>
+          <button class="chip on f-rental" data-filter="rental" onclick="setFilter('rental')"><span class="cd cd-rental"></span>Rentals</button>
+          <button class="chip" data-filter="pt" onclick="toast('Pool & Tennis — coming soon')"><span class="cd cd-pt"></span>Pool & Tennis</button>
+        </div>
+
+        <div class="monthgrid">
+          <div class="mh"><b>August 2026</b><span class="muted" style="font-size:12px">‹ ›</span></div>
+          <div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+          <div class="days" id="daysgrid"></div>
+        </div>
+
+        <div class="agenda" id="agenda">
+          <div class="dhead">Sat · Aug 9</div>
+          <div class="card aitem event" data-type="event" onclick="openEvent('social')">
+            <div class="bar"></div>
+            <div class="ai" style="flex:1"><h4>Summer Sunset Social</h4><div class="as">7:00 PM · Pavilion · Adults</div></div>
+            <span class="tag">Event</span>
+          </div>
+          <div class="dhead">Sun · Aug 17</div>
+          <div class="card aitem rental" data-type="rental">
+            <div class="bar"></div>
+            <div class="ai" style="flex:1"><h4>Pavilion — Ramirez birthday</h4><div class="as">12:00–4:00 PM · Booked</div></div>
+            <span class="tag">Rental</span>
+          </div>
+          <div class="dhead">Sat · Aug 23</div>
+          <div class="card aitem rental" data-type="rental">
+            <div class="bar"></div>
+            <div class="ai" style="flex:1"><h4>Pavilion — Book club potluck</h4><div class="as">5:00–9:00 PM · Booked</div></div>
+            <span class="tag">Rental</span>
+          </div>
+          <div class="dhead">Sat · Aug 30</div>
+          <div class="card aitem event" data-type="event" onclick="openEvent('luau')">
+            <div class="bar"></div>
+            <div class="ai" style="flex:1"><h4>End-of-Summer Luau</h4><div class="as">6:00 PM · Pool · Family</div></div>
+            <span class="tag">Event</span>
+          </div>
+        </div>
+        <div style="height:24px"></div>
+      </section>
+
+      <!-- ================= RENTALS ================= -->
+      <section class="screen" data-screen="rentals">
+        <div class="detail-hero" style="background:linear-gradient(165deg,#FDECD2,#F8DDB6 55%,#EAF4EC)">
+          <div class="sunwash"></div>
+          <button class="backbtn" onclick="go('home')">‹ Home</button>
+          <span class="kicker" style="display:block;margin-top:14px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">RESIDENT RENTAL</span>
+          <h2>The Pavilion</h2>
+          <p style="position:relative;margin:8px 0 0;color:var(--pine-deep);font-size:13.5px;max-width:250px">Covered pavilion at Black Fir Court — picnic tables, grill, and open lawn.</p>
+        </div>
+
+        <div class="card infocard">
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+            <div><div class="lbl">Rental fee</div><div class="val">$75 · per 4-hour block</div></div>
+          </div>
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+            <div><div class="lbl">Booking</div><div class="val">Instant — confirmed if the date’s open</div></div>
+          </div>
+        </div>
+
+        <div class="section-head"><h3>Pick an open date</h3><a onclick="go('calendar')">See calendar →</a></div>
+        <div class="pad">
+          <div class="monthgrid" style="margin:0">
+            <div class="mh"><b>August 2026</b><span class="muted" style="font-size:12px">‹ ›</span></div>
+            <div class="dow"><span>S</span><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span></div>
+            <div class="days" id="rentgrid"></div>
+          </div>
+          <div style="display:flex;gap:16px;margin:12px 4px 0;font-size:11.5px;color:var(--muted);font-weight:600">
+            <span style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:50%;background:var(--mint-2);display:inline-block"></i>Open</span>
+            <span style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:50%;background:var(--sun);display:inline-block"></i>Booked</span>
+            <span style="display:flex;align-items:center;gap:6px"><i style="width:9px;height:9px;border-radius:50%;background:var(--pine);display:inline-block"></i>Selected</span>
+          </div>
+        </div>
+
+        <div class="paybar">
+          <div id="rent-selected" class="muted" style="font-size:13px;text-align:center;margin-bottom:10px">Tap an open date to select it</div>
+          <button class="btn btn-sun" id="rent-btn" style="opacity:.5;pointer-events:none" onclick="bookPavilion()">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#3d2410" fill="none" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            Reserve · pay $75
+          </button>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+
+      <!-- ================= WALLET (resident) ================= -->
+      <section class="screen" data-screen="wallet">
+        <div class="pad" style="padding-top:14px">
+          <span class="eyebrow">◱ Payments</span>
+          <h2 class="disp committee-only">Money</h2>
+          <h2 class="disp resident-only">Wallet</h2>
+        </div>
+
+        <!-- committee tab switch -->
+        <div class="wtabs committee-only">
+          <button class="on" id="wt-books" onclick="wtab('books')">Event books</button>
+          <button id="wt-mine" onclick="wtab('mine')">My tickets</button>
+        </div>
+
+        <!-- ---- RESIDENT view ---- -->
+        <div class="resident-only">
+          <div class="duescard owing" onclick="go('dues')">
+            <div class="sun"></div>
+            <div class="dl">2026 Annual dues</div>
+            <div class="dv tnum">$250.00 due</div>
+            <div class="dsubtxt">Covers pool, tennis & neighborhood events · due Sep 1</div>
+            <div style="margin-top:14px"><span class="btn" style="background:#fff;color:#B8452C;padding:11px 16px;font-size:14px;width:auto;display:inline-flex">Pay dues →</span></div>
+          </div>
+
+          <div class="balancecard">
+            <div class="sun"></div>
+            <div class="lbl">Paid this season</div>
+            <div class="amt tnum">$165.00</div>
+            <div style="font-size:12px;opacity:.85;margin-top:4px">2 tickets · 1 pavilion booking</div>
+          </div>
+          <div class="section-head"><h3>My tickets</h3></div>
+          <div id="resident-tickets">
+            <div class="stub myticket">
+              <div class="stub-body" style="padding:14px 16px 12px">
+                <div class="kicker">Admit · Family</div>
+                <h3 style="font-size:19px;margin:4px 0 2px">End-of-Summer Luau</h3>
+                <div class="metarow"><span class="m"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Aug 30 · 6:00 PM</span></div>
+                <div class="lines" style="margin:10px 0 0;display:flex;flex-direction:column;gap:4px">
+                  <span class="ln" style="display:flex;font-size:12.5px;color:var(--muted);font-weight:600">2 × Adult ticket<span class="lnv" style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--pine-deep)">$70.00</span></span>
+                  <span class="ln" style="display:flex;font-size:12.5px;color:var(--muted);font-weight:600">2 × Kid ticket<span class="lnv" style="margin-left:auto;font-variant-numeric:tabular-nums;color:var(--pine-deep)">$20.00</span></span>
+                </div>
+              </div>
+              <div class="perf"></div>
+              <div class="stub-foot"><span class="pill pill-pine">✓ Paid $90.00</span><span class="muted tnum" style="font-size:12px;font-weight:700">#FMW-2214</span></div>
+            </div>
+            <div class="stub myticket">
+              <div class="stub-body" style="padding:14px 16px 12px">
+                <div class="kicker">Pavilion · 4 hrs</div>
+                <h3 style="font-size:19px;margin:4px 0 2px">Pavilion Reservation</h3>
+                <div class="metarow"><span class="m"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg> Sep 13 · 12–4 PM</span></div>
+              </div>
+              <div class="perf"></div>
+              <div class="stub-foot"><span class="pill pill-pine">✓ Paid $75.00</span><span class="muted tnum" style="font-size:12px;font-weight:700">#FMW-RP08</span></div>
+            </div>
+          </div>
+          <div style="height:24px"></div>
+        </div>
+
+        <!-- ---- COMMITTEE money dashboard ---- -->
+        <div class="committee-only" id="books-view">
+          <div class="card selectbar">
+            <span class="lbl">Event</span>
+            <select id="event-select" onchange="toast('Switched books')">
+              <option>End-of-Summer Luau</option>
+              <option>Summer Sunset Social</option>
+              <option>Fall Chili Cook-off</option>
+            </select>
+          </div>
+
+          <div class="card moneytop">
+            <div class="ring"><div class="hole"><b class="tnum" id="ring-collected">$840</b><span>collected</span></div></div>
+            <div class="legend">
+              <div class="lr"><span class="sw" style="background:var(--pine)"></span>Collected <b class="tnum">$840.00</b></div>
+              <div class="lr"><span class="sw" style="background:var(--sun)"></span>Spent <b class="tnum" id="spent-legend">$285.55</b></div>
+              <div class="lr"><span class="sw" style="background:var(--mint-2)"></span>Budget <b class="tnum">$1,200</b></div>
+            </div>
+          </div>
+
+          <div class="subhead"><h3>Payments in</h3><span class="muted tnum" style="font-size:13px;font-weight:700">4 sources</span></div>
+          <div class="card srcrow"><div class="si si-card">CARD</div><div><div class="sn">Card · Stripe</div><div class="muted" style="font-size:11.5px">18 payments</div></div><span class="amt tnum">$520.00</span></div>
+          <div class="card srcrow"><div class="si si-venmo">V</div><div><div class="sn">Venmo</div><div class="muted" style="font-size:11.5px">9 payments</div></div><span class="amt tnum">$220.00</span></div>
+          <div class="card srcrow"><div class="si si-cash">$</div><div><div class="sn">Cash · at the door</div><div class="muted" style="font-size:11.5px">Logged by Dana</div></div><span class="amt tnum">$100.00</span></div>
+          <div class="card srcrow"><div class="si si-check">CK</div><div><div class="sn">Check</div><div class="muted" style="font-size:11.5px">1 payment</div></div><span class="amt tnum">$0.00</span></div>
+
+          <div class="subhead"><h3>Sales by item</h3><span class="muted tnum" style="font-size:13px;font-weight:700">$840.00</span></div>
+          <div class="card itemrow"><div class="bar2"></div><div><div style="font-weight:600;font-size:14px">Adult ticket</div><div class="qtytag">18 SOLD · $35.00 EA</div></div><span class="amt tnum">$630.00</span></div>
+          <div class="card itemrow"><div class="bar2" style="background:var(--water)"></div><div><div style="font-weight:600;font-size:14px">Kid ticket</div><div class="qtytag">9 SOLD · $10.00 EA</div></div><span class="amt tnum">$90.00</span></div>
+          <div class="card itemrow"><div class="bar2" style="background:var(--sun)"></div><div><div style="font-weight:600;font-size:14px">Event T-shirt</div><div class="qtytag">6 SOLD · $20.00 EA</div></div><span class="amt tnum">$120.00</span></div>
+
+          <div class="subhead"><h3>Who paid for what</h3><a onclick="toast('Exported to CSV')">Export →</a></div>
+          <div class="card paidwhat">
+            <div class="pw-h"><div class="pav" style="background:#E86F4E;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px">SM</div><div style="flex:1"><div class="pn" style="font-weight:600;font-size:14.5px">Sarah M.</div><div class="pp" style="font-size:12px;color:var(--muted)">Card · Jul 19</div></div><b class="tnum">$90.00</b></div>
+            <div class="lines"><span class="ln">2 × Adult ticket<span class="lnv">$70.00</span></span><span class="ln">2 × Kid ticket<span class="lnv">$20.00</span></span></div>
+          </div>
+          <div class="card paidwhat">
+            <div class="pw-h"><div class="pav" style="background:#5FB4AE;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px">DR</div><div style="flex:1"><div class="pn" style="font-weight:600;font-size:14.5px">Dana R.</div><div class="pp" style="font-size:12px;color:var(--muted)">Venmo · Jul 20</div></div><b class="tnum">$55.00</b></div>
+            <div class="lines"><span class="ln">1 × Adult ticket<span class="lnv">$35.00</span></span><span class="ln">1 × Event T-shirt<span class="lnv">$20.00</span></span></div>
+          </div>
+          <div class="card paidwhat">
+            <div class="pw-h"><div class="pav" style="background:#8a7cc9;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px">MK</div><div style="flex:1"><div class="pn" style="font-weight:600;font-size:14.5px">Mike K.</div><div class="pp" style="font-size:12px;color:var(--muted)">Cash · logged by Dana</div></div><b class="tnum">$35.00</b></div>
+            <div class="lines"><span class="ln">1 × Adult ticket<span class="lnv">$35.00</span></span></div>
+          </div>
+
+          <div class="subhead"><h3>Owed back to volunteers</h3><a onclick="toast('Reimbursement run queued')">Reimburse →</a></div>
+          <div id="expense-people">
+            <div class="card person"><div class="pav" style="background:#E86F4E">SM</div><div><div class="pn">Sarah M.</div><div class="pp">Costco · food & drinks</div></div><div class="owed"><b class="tnum">$142.60</b><span>OWED</span></div></div>
+            <div class="card person"><div class="pav" style="background:#5FB4AE">DR</div><div><div class="pn">Dana R.</div><div class="pp">Safeway · beverages</div></div><div class="owed"><b class="tnum">$54.75</b><span>OWED</span></div></div>
+            <div class="card person"><div class="pav" style="background:#8a7cc9">MK</div><div><div class="pn">Mike K.</div><div class="pp">Party City · decor</div></div><div class="owed"><b class="tnum">$88.20</b><span>OWED</span></div></div>
+          </div>
+
+          <div class="scanfab">
+            <button class="btn btn-primary" onclick="go('scan')">
+              <svg width="19" height="19" viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="1.9"><path d="M4 7V5a1 1 0 011-1h2M17 4h2a1 1 0 011 1v2M20 17v2a1 1 0 01-1 1h-2M7 20H5a1 1 0 01-1-1v-2" stroke-linecap="round"/><rect x="7" y="8" width="10" height="8" rx="1.5"/></svg>
+              Scan a receipt
+            </button>
+          </div>
+        </div>
+        <div style="height:20px"></div>
+      </section>
+
+      <!-- ================= SCAN (committee) ================= -->
+      <section class="screen" data-screen="scan">
+        <div class="scanview" id="scan-camera">
+          <div class="shead"><button class="backbtn" onclick="go('wallet')">‹ Cancel</button>
+            <span style="font-weight:700;font-size:14px;margin-left:2px">Scan receipt</span></div>
+          <div class="camera">
+            <div class="receipt-ghost"><div class="rl s"></div><div class="rl m"></div><div class="rl"></div><div class="rl m"></div><div class="rl s"></div><div class="rl big"></div></div>
+            <div class="reticle"><span class="corner c1"></span><span class="corner c2"></span><span class="corner c3"></span><span class="corner c4"></span></div>
+            <div class="sweep"></div>
+          </div>
+          <div class="sfoot">
+            <div class="shint">Line up the receipt — we’ll read the merchant, date & total on device.</div>
+            <div class="shutter" onclick="runScan()"></div>
+          </div>
+        </div>
+
+        <!-- parsed result -->
+        <div id="scan-parsed" class="hide">
+          <div class="detail-hero" style="background:var(--cream);padding:12px 18px 6px">
+            <button class="backbtn" onclick="go('scan');resetScan()">‹ Rescan</button>
+            <h2 style="font-size:24px;margin-top:12px">Review expense</h2>
+          </div>
+          <div class="parsed">
+            <div class="flash"><svg width="16" height="16" viewBox="0 0 24 24" stroke="#2E7D63" fill="none" stroke-width="2.2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg> Read on device · 3 fields found</div>
+
+            <div class="field parsed-hit"><label>Merchant</label><div class="fv"><span>COSTCO WHOLESALE #1071</span><span class="edit">Edit</span></div></div>
+            <div class="field parsed-hit"><label>Date</label><div class="fv"><span>Aug 28, 2026</span><span class="edit">Edit</span></div></div>
+            <div class="field parsed-hit"><label>Total</label><div class="fv"><span class="tnum">$142.60</span><span class="edit">Edit</span></div></div>
+
+            <div class="field"><label>Category</label>
+              <div class="chipset">
+                <span class="selchip on">Food & Beverage</span>
+                <span class="selchip">Supplies</span>
+                <span class="selchip">Decor</span>
+                <span class="selchip">Rentals</span>
+              </div>
+            </div>
+            <div class="field"><label>Paid by</label>
+              <div class="chipset">
+                <span class="selchip on">Sarah M.</span>
+                <span class="selchip">Dana R.</span>
+                <span class="selchip">Mike K.</span>
+                <span class="selchip">Me</span>
+              </div>
+            </div>
+            <div class="field"><label>Apply to event</label>
+              <div class="chipset">
+                <span class="selchip on">End-of-Summer Luau</span>
+                <span class="selchip">Summer Sunset Social</span>
+              </div>
+            </div>
+
+            <div style="padding:6px 14px 22px">
+              <button class="btn btn-primary" onclick="saveExpense()">Save expense · track to Sarah</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= YOU ================= -->
+      <section class="screen" data-screen="you">
+        <div class="profhead">
+          <div class="pfav">A</div>
+          <h2>Alex Rivera</h2>
+          <div class="rolechip only-res">◆ Fox Mill Woods resident</div>
+          <div class="rolechip only-coord">★ Event Coordinator · Crooked Fox Collective</div>
+          <div class="rolechip only-board">◆ Board Member · Fox Mill Woods</div>
+        </div>
+
+        <div class="card listcard committee-only">
+          <div class="lrow" style="cursor:pointer" onclick="go('event-editor')"><div class="li"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div><div><div class="lt">Create &amp; manage events</div><div class="ls">Budgets, tickets, expenses</div></div><div class="lc">›</div></div>
+          <div class="lrow"><div class="li"><svg viewBox="0 0 24 24"><path d="M4 11l8-6 8 6M6 10v9h12v-9"/></svg></div><div><div class="lt">Pavilion requests</div><div class="ls">Auto-approved · review log</div></div><div class="lc">›</div></div>
+        </div>
+
+        <div class="card listcard board-only">
+          <div class="lrow" style="cursor:pointer" onclick="go('directory')"><div class="li"><svg viewBox="0 0 24 24"><path d="M4 18v-1a4 4 0 014-4M15 13a4 4 0 014 4v1"/><circle cx="8" cy="8" r="2.6"/><circle cx="16" cy="8" r="2.6"/></svg></div><div><div class="lt">Directory &amp; members</div><div class="ls">Dues status, approvals, roles</div></div><div class="lc">›</div></div>
+          <div class="lrow" style="cursor:pointer" onclick="go('wallet')"><div class="li"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 16v-5M12 16V8M16 16v-8"/></svg></div><div><div class="lt">All-event finances</div><div class="ls">Every book · reconcile · export</div></div><div class="lc">›</div></div>
+        </div>
+
+        <div class="card listcard">
+          <div class="lrow"><div class="li"><svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 01-3.4 0"/></svg></div><div><div class="lt">Notifications</div><div class="ls">Event reminders on</div></div><div class="lc">›</div></div>
+          <div class="lrow"><div class="li"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div><div><div class="lt">Payment methods</div><div class="ls">Visa ···· 4242</div></div><div class="lc">›</div></div>
+        </div>
+
+        <div class="pad" style="margin-top:18px">
+          <button class="btn btn-outline" onclick="go('auth');setRole('resident')">Sign out</button>
+        </div>
+        <div style="height:24px"></div>
+      </section>
+
+      <!-- ============== EVENT EDITOR (coordinator / board) ============== -->
+      <section class="screen" data-screen="event-editor">
+        <div class="detail-hero" style="background:linear-gradient(165deg,#EAF4EC,#DCEEDF 60%,#FDECD2);padding:12px 18px 16px">
+          <button class="backbtn" onclick="go('events')">‹ Events</button>
+          <span class="kicker" style="display:block;margin-top:12px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">EVENT COORDINATOR</span>
+          <h2 style="font-size:25px;margin-top:6px">New event</h2>
+        </div>
+        <div class="parsed" style="padding-top:12px">
+          <div class="field"><label>Event name</label><input class="tinput" placeholder="e.g. Fall Chili Cook-off"></div>
+          <div class="frow" style="margin:0 14px 12px">
+            <div class="field" style="margin:0"><label>Date</label><input class="tinput" placeholder="Oct 11, 2026"></div>
+            <div class="field" style="margin:0"><label>Start</label><input class="tinput" placeholder="4:00 PM"></div>
+          </div>
+          <div class="field"><label>Location</label>
+            <div class="chipset"><span class="selchip on">Pavilion</span><span class="selchip">Pool deck</span><span class="selchip">Clubhouse</span><span class="selchip">Other</span></div>
+          </div>
+          <div class="field"><label>Audience</label>
+            <div class="chipset"><span class="selchip on">Family</span><span class="selchip">Adults</span><span class="selchip">Kids</span></div>
+          </div>
+          <div class="field"><label>Description</label><textarea class="tinput" placeholder="What should neighbors know?"></textarea></div>
+
+          <div class="field"><label>Ticketing</label>
+            <div class="chipset"><span class="selchip on" onclick="showPaid(false)">Free · RSVP</span><span class="selchip" onclick="showPaid(true)">Paid items</span></div>
+          </div>
+          <div id="paid-fields" style="display:none">
+            <div class="field" style="margin-bottom:8px"><label>Paid items · what neighbors can buy</label></div>
+            <div id="item-list">
+              <div class="itemcard">
+                <div class="ih"><span class="nm">Adult ticket</span><span class="px">$35.00</span><span class="del" onclick="delItem(this)">×</span></div>
+                <div class="isub">Limit 120 · per person</div>
+              </div>
+              <div class="itemcard">
+                <div class="ih"><span class="nm">Kid ticket (under 12)</span><span class="px">$10.00</span><span class="del" onclick="delItem(this)">×</span></div>
+                <div class="isub">Limit 80 · per person</div>
+              </div>
+              <div class="itemcard">
+                <div class="ih"><span class="nm">Chili entry</span><span class="px">$15.00</span><span class="del" onclick="delItem(this)">×</span></div>
+                <div class="isub">Limit 24 · per household</div>
+              </div>
+              <div class="itemcard">
+                <div class="ih"><span class="nm">Event T-shirt</span><span class="px">$20.00</span><span class="del" onclick="delItem(this)">×</span></div>
+                <div class="isub">Optional add-on · sizes at pickup</div>
+              </div>
+            </div>
+            <div class="additem" onclick="toggleAddItem()">＋ Add another paid item</div>
+            <div id="add-item-form" style="display:none;margin:0 14px 14px">
+              <div class="itemedit">
+                <input id="ni-name" placeholder="Item name (e.g. Raffle ticket)">
+                <input id="ni-price" placeholder="$5">
+              </div>
+              <div class="itemedit" style="margin-top:8px">
+                <input id="ni-limit" placeholder="Limit (optional)">
+                <button class="btn btn-primary sm" style="width:100%" onclick="addItem()">Add</button>
+              </div>
+            </div>
+            <div class="field"><label>RSVP deadline</label><input class="tinput" placeholder="Oct 8, 2026"></div>
+          </div>
+
+          <div class="field"><label>Budget target</label><input class="tinput" placeholder="$1,200"></div>
+          <div class="field"><label>Coordinators</label>
+            <div class="chipset"><span class="selchip on">You (Alex R.)</span><span class="selchip">+ Sarah M.</span><span class="selchip">+ Dana R.</span></div>
+          </div>
+          <div class="field"><label>Visibility</label>
+            <div class="chipset"><span class="selchip on">All residents</span><span class="selchip">Invite only</span></div>
+          </div>
+
+          <div style="padding:6px 14px 26px;display:flex;gap:10px">
+            <button class="btn btn-outline" style="flex:0 0 40%" onclick="saveDraft()">Save draft</button>
+            <button class="btn btn-primary" style="flex:1" onclick="publishEvent()">Publish event</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== DIRECTORY (all roles · tiered visibility) ============== -->
+      <section class="screen" data-screen="directory">
+        <div class="detail-hero" style="background:linear-gradient(165deg,#EAF4EC,#DCEEDF 60%,#DDF0EE);padding:12px 18px 16px">
+          <button class="backbtn" onclick="go('home')">‹ Home</button>
+          <span class="kicker only-res" style="margin-top:12px;color:var(--pine);font-weight:800;font-size:11px;letter-spacing:.12em">FOX MILL WOODS</span>
+          <span class="kicker only-coord" style="margin-top:12px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">EVENT COORDINATOR</span>
+          <span class="kicker only-board" style="margin-top:12px;color:var(--pine);font-weight:800;font-size:11px;letter-spacing:.12em">BOARD MEMBER</span>
+          <h2 style="font-size:25px;margin-top:6px">Directory</h2>
+        </div>
+
+        <!-- stats: residents see a count; coordinators/board see dues breakdown -->
+        <div class="statbar resident-only">
+          <div class="st"><b class="tnum">212</b><span>Neighbors</span></div>
+          <div class="st"><b class="tnum">96</b><span>Households</span></div>
+        </div>
+        <div class="statbar committee-only">
+          <div class="st paid"><b class="tnum">168</b><span>Paid</span></div>
+          <div class="st unpaid"><b class="tnum">44</b><span>Unpaid</span></div>
+          <div class="st board-only"><b class="tnum">2</b><span>Pending</span></div>
+        </div>
+
+        <div class="pad" style="margin-top:14px"><input class="tinput" placeholder="Search neighbors…"></div>
+
+        <!-- dues filters: coordinators + board only -->
+        <div class="filterbar committee-only" style="margin-top:12px">
+          <button class="chip on" data-dfilter="all" onclick="dirFilter('all')">All</button>
+          <button class="chip" data-dfilter="paid" onclick="dirFilter('paid')"><span class="cd" style="background:var(--pine)"></span>Paid</button>
+          <button class="chip" data-dfilter="unpaid" onclick="dirFilter('unpaid')"><span class="cd" style="background:var(--danger)"></span>Unpaid</button>
+          <button class="chip board-only" data-dfilter="pending" onclick="dirFilter('pending')"><span class="cd" style="background:#c9b46a"></span>Pending</button>
+        </div>
+
+        <div class="sortrow">
+          <span>Sort</span>
+          <div class="sortchips">
+            <button class="schip on" data-sort="name" onclick="dirSort('name')">Name</button>
+            <button class="schip committee-only" data-sort="status" onclick="dirSort('status')">Dues status</button>
+            <button class="schip board-only" data-sort="address" onclick="dirSort('address')">Address</button>
+            <button class="schip" data-sort="role" onclick="dirSort('role')">Role</button>
+          </div>
+        </div>
+
+        <div id="dir-list" style="margin-top:8px"></div>
+
+        <div class="notice resident-only" style="margin:14px 12px 0"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><div><div class="nt">What neighbors can see</div><div class="nd">You see names and email addresses only. Your address and phone stay private to the board, and dues status is never shown to other residents. You can hide your email in Settings.</div></div>
+        <div class="notice committee-only" style="margin:14px 12px 0"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><div><div class="nt">Coordinator view</div><div class="nd">You can see dues status, email, and phone to run events. Home addresses are board-only. Every record you open is logged.</div></div>
+        <div class="notice board-only" style="margin:14px 12px 0"><svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg><div><div class="nt">Board view · full records</div><div class="nd">You see every field, including addresses. Used to verify residency and track membership — never shared or sold. Dues and role changes are written to the audit log.</div></div>
+        <div style="height:24px"></div>
+      </section>
+
+      <!-- ============== POOL & TENNIS (hours only) ============== -->
+      <section class="screen" data-screen="pool">
+        <div class="detail-hero" style="background:linear-gradient(165deg,#DDF0EE,#CFE9E4 55%,#FDECD2);padding:12px 18px 20px">
+          <div class="sunwash"></div>
+          <button class="backbtn" onclick="go('home')">‹ Home</button>
+          <span class="kicker" style="display:block;margin-top:12px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">FOX MILL WOODS</span>
+          <h2 style="font-size:26px;margin-top:6px">Pool &amp; Tennis</h2>
+        </div>
+
+        <div class="card" style="margin:-10px 12px 0;position:relative;padding:18px;text-align:center">
+          <div class="eyebrow" style="justify-content:center">◆ Open now</div>
+          <div style="font-family:'Fraunces';font-weight:700;font-size:30px;margin-top:6px">11:00 AM – 8:00 PM</div>
+          <div class="muted" style="font-size:13px;margin-top:3px">Today · Wednesday, Jul 22</div>
+        </div>
+
+        <div class="section-head"><h3>Pool hours</h3></div>
+        <div class="card itemrow"><div class="bar2"></div><div style="flex:1"><div style="font-weight:600;font-size:14px">Monday – Friday</div></div><span class="amt tnum" style="font-size:13.5px">11:00 AM – 8:00 PM</span></div>
+        <div class="card itemrow"><div class="bar2"></div><div style="flex:1"><div style="font-weight:600;font-size:14px">Saturday – Sunday</div></div><span class="amt tnum" style="font-size:13.5px">10:00 AM – 8:00 PM</span></div>
+        <div class="card itemrow"><div class="bar2" style="background:var(--sun)"></div><div style="flex:1"><div style="font-weight:600;font-size:14px">Adult swim</div><div class="qtytag">DAILY</div></div><span class="amt tnum" style="font-size:13.5px">7:00 – 8:00 PM</span></div>
+
+        <div class="section-head"><h3>Tennis courts</h3></div>
+        <div class="card itemrow"><div class="bar2" style="background:var(--water)"></div><div style="flex:1"><div style="font-weight:600;font-size:14px">Every day</div></div><span class="amt tnum" style="font-size:13.5px">7:00 AM – Dusk</span></div>
+        <div style="height:26px"></div>
+      </section>
+
+      <!-- ============== DUES PAYMENT (resident) ============== -->
+      <section class="screen" data-screen="dues">
+        <div class="detail-hero" style="background:linear-gradient(165deg,#EAF4EC,#DCEEDF 55%,#FDECD2);padding:12px 18px 18px">
+          <div class="sunwash"></div>
+          <button class="backbtn" onclick="go('wallet')">‹ Wallet</button>
+          <span class="kicker" style="display:block;margin-top:12px;color:var(--sun);font-weight:800;font-size:11px;letter-spacing:.12em">FOX MILL WOODS MEMBERSHIP</span>
+          <h2 style="font-size:25px;margin-top:6px">Annual dues</h2>
+        </div>
+
+        <div class="card infocard">
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+            <div><div class="lbl">2026 membership</div><div class="val tnum">$250.00</div></div>
+          </div>
+          <div class="inforow">
+            <div class="ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></div>
+            <div><div class="lbl">Covers</div><div class="val" style="font-size:13.5px">Pool, tennis & neighborhood events · Jan–Dec 2026</div></div>
+          </div>
+        </div>
+
+        <div class="section-head"><h3>How would you like to pay?</h3></div>
+
+        <div class="methodcard on" id="m-bank" onclick="pickMethod('bank')">
+          <div class="mh2">
+            <div class="mlogo" style="background:var(--mint)">
+              <svg width="20" height="20" viewBox="0 0 24 24" stroke="#2E7D63" fill="none" stroke-width="1.8"><path d="M3 10l9-6 9 6M5 10v9h14v-9M3 21h18" stroke-linecap="round"/><path d="M9 19v-5M15 19v-5"/></svg>
+            </div>
+            <div style="flex:1"><div class="mt2">Bank account</div><div class="ms2">Pay directly from checking</div></div>
+            <span class="badge2">LOWEST FEE</span>
+          </div>
+          <div class="mandate" style="margin:11px 0 0">Connect your bank in a few taps — verified instantly. Arrives in 2–4 business days. By paying you authorize Fox Mill Woods to debit this account for $250.00 on a one-time basis.</div>
+        </div>
+
+        <div class="methodcard" id="m-card" onclick="pickMethod('card')">
+          <div class="mh2">
+            <div class="mlogo" style="background:#EDEAFB">
+              <svg width="20" height="20" viewBox="0 0 24 24" stroke="#635BFF" fill="none" stroke-width="1.8"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+            </div>
+            <div style="flex:1"><div class="mt2">Card</div><div class="ms2">Visa ···· 4242 · instant</div></div>
+          </div>
+        </div>
+
+        <div class="totalbar"><span class="tl">Total due</span><span class="tv tnum">$250.00</span></div>
+
+        <div class="paybar">
+          <button class="btn btn-primary" onclick="payDues()">
+            <svg width="18" height="18" viewBox="0 0 24 24" stroke="#fff" fill="none" stroke-width="2"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span id="dues-btn-label">Pay $250.00 from bank</span>
+          </button>
+          <p class="mandate" style="text-align:center;margin-top:10px">Payments are processed securely by Stripe. Fox Mill Woods never sees your bank or card details.</p>
+        </div>
+        <div style="height:8px"></div>
+      </section>
+
+    </div><!-- /viewport -->
+
+    <div class="azindex" id="az-index"></div>
+
+    <!-- TAB BAR -->
+    <nav class="tabbar" id="tabbar">
+      <button class="tab on" data-tab="home" onclick="go('home')">
+        <svg viewBox="0 0 24 24" class="filloff"><path d="M3 11l9-8 9 8M5 10v10h5v-6h4v6h5V10"/></svg>
+        <svg viewBox="0 0 24 24" class="fillon" fill="#2E7D63" stroke="#2E7D63"><path d="M3 11l9-8 9 8v11h-6v-6h-6v6H3z"/></svg>
+        Home
+      </button>
+      <button class="tab" data-tab="events" onclick="go('events')">
+        <svg viewBox="0 0 24 24" class="filloff"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>
+        <svg viewBox="0 0 24 24" class="fillon" fill="#2E7D63" stroke="#2E7D63"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M8 3v4M16 3v4" stroke="#fff"/><path d="M3 10h18" stroke="#fff"/></svg>
+        Events
+      </button>
+      <button class="tab" data-tab="calendar" onclick="go('calendar')">
+        <svg viewBox="0 0 24 24" class="filloff"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 2v4M16 2v4M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+        <svg viewBox="0 0 24 24" class="fillon" fill="#2E7D63" stroke="#2E7D63"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M8 2v4M16 2v4M3 9h18" stroke="#fff"/><circle cx="8" cy="14" r="1.1" fill="#fff" stroke="none"/><circle cx="12" cy="14" r="1.1" fill="#F2913D" stroke="none"/><circle cx="16" cy="14" r="1.1" fill="#fff" stroke="none"/></svg>
+        Calendar
+      </button>
+      <button class="tab" data-tab="wallet" onclick="go('wallet')">
+        <svg viewBox="0 0 24 24" class="filloff"><path d="M3 7a2 2 0 012-2h12a2 2 0 012 2M3 7v10a2 2 0 002 2h14a2 2 0 002-2v-6a2 2 0 00-2-2H5"/><circle cx="17" cy="13" r="1.2"/></svg>
+        <svg viewBox="0 0 24 24" class="fillon" fill="#2E7D63" stroke="#2E7D63"><path d="M3 8a2 2 0 012-2h13a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><circle cx="16.5" cy="13" r="1.4" fill="#F2913D" stroke="none"/></svg>
+        Wallet
+      </button>
+      <button class="tab" data-tab="you" onclick="go('you')">
+        <svg viewBox="0 0 24 24" class="filloff"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"/></svg>
+        <svg viewBox="0 0 24 24" class="fillon" fill="#2E7D63" stroke="#2E7D63"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.5-7 8-7s8 3 8 7z"/></svg>
+        You
+      </button>
+    </nav>
+
+    <div class="toast" id="toast"><svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"/></svg><span id="toast-msg">Done</span></div>
+  </div>
+</div>
+
+<script>
+const V = document.getElementById('viewport');
+function go(name){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active', s.dataset.screen===name));
+  const tabFor = {home:'home',events:'events',event:'events','event-editor':'events',calendar:'calendar',rentals:'home',wallet:'wallet',scan:'wallet',you:'you',directory:'home',pool:'home',dues:'wallet'};
+  const t = tabFor[name];
+  document.querySelectorAll('.tab').forEach(b=>b.classList.toggle('on', b.dataset.tab===t));
+  const showTabs = name!=='auth' && name!=='scan';
+  document.getElementById('tabbar').style.display = showTabs ? 'flex':'none';
+  const rail=document.getElementById('az-index');
+  if(rail) rail.style.display = (name==='directory' && !rail.dataset.empty) ? 'flex' : 'none';
+  V.scrollTop = 0;
+  if(name==='scan') resetScan();
+}
+
+function setRole(role){
+  document.body.classList.remove('role-resident','role-coordinator','role-board');
+  document.body.classList.add('role-'+role);
+  document.getElementById('rs-res').classList.toggle('on', role==='resident');
+  document.getElementById('rs-coord').classList.toggle('on', role==='coordinator');
+  document.getElementById('rs-board').classList.toggle('on', role==='board');
+  renderDir();
+}
+
+/* ---- events ---- */
+const EVENTS = {
+  float:{t:'Float Night at the Pool',when:'Wed, Jul 22 · 5:00 PM',cost:'Free · RSVP',paid:false,
+    desc:'Bring your favorite float and chill at the pool as the sun goes down. Music, snacks, and the whole neighborhood.'},
+  social:{t:'Summer Sunset Social',when:'Sat, Aug 9 · 7:00 PM',cost:'From $35 · 3 items',paid:true,
+    desc:'An adults-only evening at the pavilion — catered bites, a bar, and a golden-hour view. Sitters welcome to sign up.',
+    items:[{n:'Adult ticket',p:35,s:'Includes dinner & one drink'},{n:'Extra drink ticket',p:8,s:'Optional add-on'},{n:'Sitter share',p:12,s:'Per child · pavilion sitter'}]},
+  luau:{t:'End-of-Summer Luau',when:'Sat, Aug 30 · 6:00 PM',cost:'From $10 · 3 items',paid:true,
+    desc:'Send summer off in style. Leis, a roast, kids’ games, and the Fintastics’ end-of-season awards.',
+    items:[{n:'Adult ticket',p:35,s:'Roast dinner included'},{n:'Kid ticket (under 12)',p:10,s:'Games & dinner'},{n:'Event T-shirt',p:20,s:'Optional · sizes at pickup'}]},
+  chili:{t:'Fall Chili Cook-off',when:'Sat, Oct 11 · 4:00 PM',cost:'From $5 · 3 items',paid:true,
+    desc:'Bring your best pot and compete for the Golden Ladle. Tasting for everyone, bragging rights for one.',
+    items:[{n:'Tasting pass',p:15,s:'Per household'},{n:'Chili entry',p:15,s:'Compete for the Golden Ladle'},{n:'Raffle ticket',p:5,s:'Optional · buy as many as you like'}]}
+};
+let CART = [];
+function renderItems(e){
+  const wrap = document.getElementById('items-picker');
+  const sec  = document.getElementById('items-section');
+  if(!e.paid || !e.items){ sec.classList.add('hide'); return; }
+  sec.classList.remove('hide');
+  CART = e.items.map(()=>0);
+  wrap.innerHTML = e.items.map((it,i)=>`
+    <div class="card itemrow" style="align-items:center">
+      <div style="flex:1">
+        <div style="font-weight:600;font-size:14.5px">${it.n}</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">${it.s} · <b class="tnum" style="color:var(--pine-deep)">$${it.p.toFixed(2)}</b></div>
+      </div>
+      <div class="stepper">
+        <button onclick="bump(${i},-1)" id="minus-${i}" disabled>−</button>
+        <span class="qty tnum" id="qty-${i}">0</span>
+        <button onclick="bump(${i},1)">+</button>
+      </div>
+    </div>`).join('');
+  updateCart(e);
+}
+function bump(i,d){
+  const e = EVENTS[CURRENT];
+  CART[i] = Math.max(0, CART[i]+d);
+  document.getElementById('qty-'+i).textContent = CART[i];
+  document.getElementById('minus-'+i).disabled = CART[i]===0;
+  updateCart(e);
+}
+function updateCart(e){
+  const total = CART.reduce((s,q,i)=>s+q*e.items[i].p,0);
+  document.getElementById('cart-total').textContent = '$'+total.toFixed(2);
+  const btn = document.getElementById('rsvp-paid');
+  document.getElementById('pay-label').textContent = total>0 ? `Pay $${total.toFixed(2)} & reserve` : 'Choose items to continue';
+  btn.style.opacity = total>0?'1':'.5';
+  btn.style.pointerEvents = total>0?'auto':'none';
+}
+let CURRENT = 'float';
+function openEvent(id){
+  const e = EVENTS[id]; CURRENT = id;
+  document.getElementById('ev-title').textContent = e.t;
+  document.getElementById('ev-when').textContent = e.when;
+  document.getElementById('ev-cost').textContent = e.cost;
+  document.getElementById('ev-desc').textContent = e.desc;
+  document.getElementById('rsvp-free').classList.toggle('hide', e.paid);
+  document.getElementById('rsvp-paid').classList.toggle('hide', !e.paid);
+  renderItems(e);
+  go('event');
+}
+function rsvpDone(){ toast("You're in — see you there!"); setTimeout(()=>go('events'),700); }
+function payDone(){ toast('Paid — ticket added to Wallet'); setTimeout(()=>go('wallet'),750); }
+
+/* ---- calendar filter ---- */
+function setFilter(f){
+  const chip = document.querySelector('.chip[data-filter="'+f+'"]');
+  if(f==='all'){
+    const turningOn = !chip.classList.contains('on');
+    document.querySelectorAll('.chip[data-filter="event"],.chip[data-filter="rental"]').forEach(c=>c.classList.toggle('on',turningOn));
+    chip.classList.toggle('on',turningOn);
+  } else {
+    chip.classList.toggle('on');
+  }
+  const showE = document.querySelector('.chip[data-filter="event"]').classList.contains('on');
+  const showR = document.querySelector('.chip[data-filter="rental"]').classList.contains('on');
+  document.querySelector('.chip[data-filter="all"]').classList.toggle('on', showE&&showR);
+  document.querySelectorAll('#agenda .aitem').forEach(it=>{
+    const ty = it.dataset.type;
+    const vis = (ty==='event'&&showE)||(ty==='rental'&&showR);
+    it.classList.toggle('hide',!vis);
+    it.previousElementSibling && it.previousElementSibling.classList.contains('dhead');
+  });
+  document.querySelectorAll('#agenda .dhead').forEach(h=>{
+    let n=h.nextElementSibling, any=false;
+    while(n && n.classList.contains('aitem')){ if(!n.classList.contains('hide')) any=true; n=n.nextElementSibling; }
+    h.style.display = any?'block':'none';
+  });
+  buildMonth();
+}
+
+/* build month grids */
+const BOOKED=[17,23], SELECTED={d:null};
+function buildMonth(){
+  const grid=document.getElementById('daysgrid'); if(!grid) return;
+  const showE=document.querySelector('.chip[data-filter="event"]').classList.contains('on');
+  const showR=document.querySelector('.chip[data-filter="rental"]').classList.contains('on');
+  const events=[9,30], rentals=[17,23];
+  grid.innerHTML=''; 
+  const start=6; // Aug 1 2026 is a Saturday -> offset
+  for(let i=0;i<start;i++){ grid.insertAdjacentHTML('beforeend','<div class="day dim"></div>'); }
+  for(let d=1;d<=31;d++){
+    let dots='';
+    if(showE&&events.includes(d)) dots+='<i style="background:#2E7D63"></i>';
+    if(showR&&rentals.includes(d)) dots+='<i style="background:#F2913D"></i>';
+    const today = d===22?' today':'';
+    grid.insertAdjacentHTML('beforeend',`<div class="day${today}">${d}<div class="dots">${dots}</div></div>`);
+  }
+}
+function buildRent(){
+  const grid=document.getElementById('rentgrid'); if(!grid) return;
+  grid.innerHTML='';
+  const start=6;
+  for(let i=0;i<start;i++) grid.insertAdjacentHTML('beforeend','<div class="day dim"></div>');
+  for(let d=1;d<=31;d++){
+    const booked=BOOKED.includes(d);
+    const cls = booked?'day':'day';
+    const bg = booked?'background:#FCEBD6;color:#9a5a15':'';
+    grid.insertAdjacentHTML('beforeend',
+      `<div class="${cls}" style="${bg};cursor:${booked?'not-allowed':'pointer'}" ${booked?'':'onclick="selectRent('+d+',this)"'}>${d}${booked?'<div class="dots"><i style="background:#F2913D"></i></div>':''}</div>`);
+  }
+}
+function selectRent(d,el){
+  document.querySelectorAll('#rentgrid .day').forEach(x=>{x.style.background=x.style.background.includes('252')?x.style.background:'';});
+  document.querySelectorAll('#rentgrid .day').forEach(x=>{ if(!BOOKED.includes(parseInt(x.textContent))) x.style.background=''; });
+  el.style.background='#2E7D63'; el.style.color='#fff';
+  SELECTED.d=d;
+  document.getElementById('rent-selected').innerHTML='Selected <b style="color:var(--pine-deep)">Sat, Aug '+d+' · 12–4 PM</b> · open';
+  const btn=document.getElementById('rent-btn'); btn.style.opacity='1'; btn.style.pointerEvents='auto';
+}
+function bookPavilion(){ toast('Pavilion booked — Aug '+SELECTED.d+' confirmed'); setTimeout(()=>go('wallet'),800); }
+
+/* wallet committee tabs */
+function wtab(which){
+  document.getElementById('wt-books').classList.toggle('on',which==='books');
+  document.getElementById('wt-mine').classList.toggle('on',which==='mine');
+  document.getElementById('books-view').style.display = which==='books'?'block':'none';
+  document.querySelector('#wallet .resident-only').style.display = which==='mine'?'block':'none';
+}
+
+/* scan flow */
+function resetScan(){ document.getElementById('scan-camera').classList.remove('hide'); document.getElementById('scan-parsed').classList.add('hide'); }
+function runScan(){
+  toast('Reading receipt…');
+  setTimeout(()=>{ document.getElementById('scan-camera').classList.add('hide'); document.getElementById('scan-parsed').classList.remove('hide'); V.scrollTop=0; },1100);
+}
+function saveExpense(){ toast('Saved — $142.60 tracked to Sarah'); setTimeout(()=>{ go('wallet'); if(document.body.classList.contains('role-committee')) wtab('books'); },800); }
+
+/* selectable chips in scan */
+document.addEventListener('click',e=>{
+  const c=e.target.closest('.selchip'); if(!c) return;
+  c.parentElement.querySelectorAll('.selchip').forEach(x=>x.classList.remove('on')); c.classList.add('on');
+});
+
+/* toast */
+let toastT;
+function toast(msg){
+  const el=document.getElementById('toast'); document.getElementById('toast-msg').textContent=msg;
+  el.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>el.classList.remove('show'),1900);
+}
+
+function showPaid(p){ document.getElementById('paid-fields').style.display=p?'block':'none'; }
+function toggleAddItem(){ const f=document.getElementById('add-item-form'); f.style.display = f.style.display==='none'?'block':'none'; }
+function addItem(){
+  const n=document.getElementById('ni-name').value.trim()||'New item';
+  const p=document.getElementById('ni-price').value.trim()||'$0';
+  const l=document.getElementById('ni-limit').value.trim();
+  document.getElementById('item-list').insertAdjacentHTML('beforeend',
+    `<div class="itemcard"><div class="ih"><span class="nm">${n}</span><span class="px">${p.startsWith('$')?p:'$'+p}</span><span class="del" onclick="delItem(this)">×</span></div><div class="isub">${l?'Limit '+l:'No limit'}</div></div>`);
+  document.getElementById('ni-name').value='';document.getElementById('ni-price').value='';document.getElementById('ni-limit').value='';
+  toggleAddItem(); toast('Item added');
+}
+function delItem(el){ el.closest('.itemcard').remove(); toast('Item removed'); }
+function publishEvent(){ toast('Event published — live on Home & Calendar'); setTimeout(()=>go('events'),850); }
+function saveDraft(){ toast('Draft saved'); }
+function approveUser(el){ const c=el.closest('.card'); c.style.transition='.3s'; c.style.opacity='.45'; toast('Member updated'); }
+
+/* ---- directory (tiered visibility + A-Z index) ---- */
+const MEMBERS = [
+  {n:'Sarah M.',      a:'2630 Black Fir Ct', e:'sarah.m@email.com',  ph:'(703) 555-0142', role:'Coordinator', status:'paid',    c:'#E86F4E', i:'SM'},
+  {n:'Alex Rivera',   a:'2634 Black Fir Ct', e:'alex.r@email.com',   ph:'(703) 555-0118', role:'Board',       status:'paid',    c:'#2E7D63', i:'AR'},
+  {n:'Dana R.',       a:'2639 Black Fir Ct', e:'dana.r@email.com',   ph:'(703) 555-0177', role:'Coordinator', status:'paid',    c:'#5FB4AE', i:'DR'},
+  {n:'Kim W.',        a:'2648 Black Fir Ct', e:'kim.w@email.com',    ph:'(703) 555-0163', role:'Resident',    status:'unpaid',  c:'#c99a3a', i:'KW'},
+  {n:'Mike K.',       a:'2612 Fox Mill Rd',  e:'mike.k@email.com',   ph:'(703) 555-0129', role:'Resident',    status:'paid',    c:'#8a7cc9', i:'MK'},
+  {n:'Priya N.',      a:'2655 Black Fir Ct', e:'priya.n@email.com',  ph:'(703) 555-0195', role:'Resident',    status:'unpaid',  c:'#4b8fb5', i:'PN'},
+  {n:'Tom & Lisa B.', a:'2601 Fox Mill Rd',  e:'the.bs@email.com',   ph:'(703) 555-0151', role:'Resident',    status:'paid',    c:'#b5654b', i:'TB'},
+  {n:'Jordan Tull',   a:'2641 Black Fir Ct', e:'jordan.t@email.com', ph:'(703) 555-0184', role:'Resident',    status:'pending', c:'#8a7cc9', i:'JT'},
+  {n:'Grace O.',      a:'2660 Fox Mill Rd',  e:'grace.o@email.com',  ph:'(703) 555-0136', role:'Resident',    status:'pending', c:'#6a9c78', i:'GO'},
+  {n:'Ben Ortiz',     a:'2622 Fox Mill Rd',  e:'ben.o@email.com',    ph:'(703) 555-0110', role:'Resident',    status:'paid',    c:'#7b9c5a', i:'BO'},
+  {n:'Elena Voss',    a:'2668 Black Fir Ct', e:'elena.v@email.com',  ph:'(703) 555-0172', role:'Resident',    status:'paid',    c:'#a0679c', i:'EV'},
+  {n:'Hank Delgado',  a:'2607 Fox Mill Rd',  e:'hank.d@email.com',   ph:'(703) 555-0158', role:'Resident',    status:'unpaid',  c:'#4b7fb5', i:'HD'},
+  {n:'Nina Patel',    a:'2652 Black Fir Ct', e:'nina.p@email.com',   ph:'(703) 555-0191', role:'Resident',    status:'paid',    c:'#c97a5a', i:'NP'},
+  {n:'Wes Carter',    a:'2615 Fox Mill Rd',  e:'wes.c@email.com',    ph:'(703) 555-0104', role:'Resident',    status:'paid',    c:'#5a8c8c', i:'WC'},
+  {n:'Ana Whitfield', a:'2644 Black Fir Ct', e:'ana.w@email.com',    ph:'(703) 555-0166', role:'Resident',    status:'paid',    c:'#b58a4b', i:'AW'},
+  {n:'Marco Silva',   a:'2618 Fox Mill Rd',  e:'marco.s@email.com',  ph:'(703) 555-0123', role:'Resident',    status:'unpaid',  c:'#6a7fb5', i:'MS'},
+  {n:'Beth Kowalski', a:'2663 Black Fir Ct', e:'beth.k@email.com',   ph:'(703) 555-0147', role:'Resident',    status:'paid',    c:'#9c6a7b', i:'BK'},
+  {n:'Sam Whitaker',  a:'2609 Fox Mill Rd',  e:'sam.w@email.com',    ph:'(703) 555-0139', role:'Resident',    status:'paid',    c:'#5a9c6a', i:'SW'},
+  {n:'Deb Ferraro',   a:'2657 Black Fir Ct', e:'deb.f@email.com',    ph:'(703) 555-0188', role:'Resident',    status:'unpaid',  c:'#c9865a', i:'DF'}
+];
+let DF='all', DS='name';
+const RANK={pending:0,unpaid:1,paid:2}, RRANK={Board:0,Coordinator:1,Resident:2};
+const DUECOLOR={paid:'#2E7D63',unpaid:'#C4553B',pending:'#c9a23a'};
+function currentRole(){
+  if(document.body.classList.contains('role-board')) return 'board';
+  if(document.body.classList.contains('role-coordinator')) return 'coordinator';
+  return 'resident';
+}
+function dirFilter(f){ DF=f; renderDir(); }
+function dirSort(s){ DS=s; renderDir(); }
+function renderDir(){
+  const el=document.getElementById('dir-list'); if(!el) return;
+  const role = currentRole();
+  const seesDues    = role !== 'resident';
+  const seesPhone   = role !== 'resident';
+  const seesAddress = role === 'board';
+  if(!seesDues && DS==='status') DS='name';
+  if(!seesAddress && DS==='address') DS='name';
+  if(!seesDues && DF!=='all') DF='all';
+  document.querySelectorAll('.schip[data-sort]').forEach(c=>c.classList.toggle('on',c.dataset.sort===DS));
+  document.querySelectorAll('.chip[data-dfilter]').forEach(c=>c.classList.toggle('on',c.dataset.dfilter===DF));
+
+  let rows = MEMBERS.filter(m=>{
+    if(role!=='board' && m.status==='pending') return false;
+    return DF==='all' || m.status===DF;
+  });
+  rows.sort((a,b)=>{
+    if(DS==='status') return RANK[a.status]-RANK[b.status] || a.n.localeCompare(b.n);
+    if(DS==='role')   return RRANK[a.role]-RRANK[b.role]   || a.n.localeCompare(b.n);
+    if(DS==='address')return a.a.localeCompare(b.a);
+    return a.n.localeCompare(b.n);
+  });
+
+  const rtag={Board:'background:#EAF4EC;color:#1B5245',Coordinator:'background:#FCEBD6;color:#9a5a15'};
+  const rowHTML = m => {
+    let sub = m.e;
+    if(seesPhone)   sub += ' · ' + m.ph;
+    if(seesAddress) sub += ' · ' + m.a;
+    const dues = seesDues
+      ? '<span class="dot-due" style="background:'+DUECOLOR[m.status]+'" title="'+m.status+'"></span>'
+      : '';
+    const tag = rtag[m.role] ? '<span class="rtag" style="'+rtag[m.role]+'">'+m.role.toUpperCase().slice(0,5)+'</span>' : '';
+    return '<div class="card mrow" onclick="toast(\'' + m.n + '\')">'
+      + '<div class="pav" style="background:'+m.c+';width:32px;height:32px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:12px;flex:0 0 auto">'+m.i+'</div>'
+      + '<div class="mi"><div class="mn">'+m.n+tag+'</div><div class="ma">'+sub+'</div></div>'
+      + dues + '</div>';
+  };
+
+  // group alphabetically only when sorting by name (otherwise the index is meaningless)
+  const alpha = (DS==='name');
+  let html='', letters=[];
+  if(alpha){
+    let last='';
+    rows.forEach(m=>{
+      const L = m.n.charAt(0).toUpperCase();
+      if(L!==last){ last=L; letters.push(L); html += '<div class="dsec" id="dsec-'+L+'">'+L+'</div>'; }
+      html += rowHTML(m);
+    });
+  } else {
+    html = rows.map(rowHTML).join('');
+  }
+  el.innerHTML = html;
+
+  // build the A-Z rail
+  const rail=document.getElementById('az-index'); if(!rail) return;
+  if(!alpha){ rail.innerHTML=''; rail.dataset.empty='1'; return; }
+  rail.dataset.empty='';
+  rail.innerHTML = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map(L=>{
+    const has = letters.includes(L);
+    return '<button onclick="jumpTo(\''+L+'\')" style="'+(has?'':'opacity:.22;pointer-events:none')+'">'+L+'</button>';
+  }).join('');
+}
+function jumpTo(L){
+  const t=document.getElementById('dsec-'+L); if(!t) return;
+  V.scrollTo({top: t.offsetTop - 8, behavior:'smooth'});
+}
+
+/* ---- dues ---- */
+let DUES_METHOD='bank';
+function pickMethod(m){
+  DUES_METHOD=m;
+  document.getElementById('m-bank').classList.toggle('on',m==='bank');
+  document.getElementById('m-card').classList.toggle('on',m==='card');
+  document.getElementById('dues-btn-label').textContent = m==='bank' ? 'Pay $250.00 from bank' : 'Pay $250.00 by card';
+}
+function payDues(){
+  toast(DUES_METHOD==='bank' ? 'Bank payment submitted — clears in 2–4 days' : 'Dues paid — thank you!');
+  setTimeout(()=>go('wallet'),950);
+}
+
+buildMonth(); buildRent(); renderDir();
+</script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+## macOS
+.DS_Store
+
+## Xcode — user-specific state & build output (never commit)
+xcuserdata/
+*.xcuserstate
+*.xcuserdatad/
+DerivedData/
+build/
+*.moved-aside
+*.pbxuser
+!default.pbxuser
+*.perspectivev3
+!default.perspectivev3
+*.hmap
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+## Swift Package Manager
+.build/
+.swiftpm/xcode/package.xcworkspace/xcuserdata/
+Packages/
+Package.resolved
+
+## The generated .xcodeproj IS committed (see CLAUDE.md "commit a minimal
+## project.pbxproj"); project.yml remains the source of truth. Do not hand-edit
+## the .pbxproj — run `xcodegen generate` after adding files.
+
+## Azure / azd
+.azure/
+
+## Secrets — never commit (read from Key Vault / GitHub secrets)
+*.env
+.env.*
+local.settings.json
