@@ -33,22 +33,7 @@ export async function issueSession(
   idToken: string,
   name?: string
 ): Promise<{ token: string; user: User }> {
-  let claims: ProviderClaims;
-  if (provider === "apple") {
-    const { payload } = await jwtVerify(idToken, appleJwks, {
-      issuer: "https://appleid.apple.com",
-      audience: APPLE_AUD,
-    });
-    claims = { sub: String(payload.sub), email: payload.email as string | undefined };
-  } else if (provider === "google") {
-    const { payload } = await jwtVerify(idToken, googleJwks, {
-      issuer: ["https://accounts.google.com", "accounts.google.com"],
-      audience: GOOGLE_AUD,
-    });
-    claims = { sub: String(payload.sub), email: payload.email as string | undefined };
-  } else {
-    throw new HttpError(400, "Unknown auth provider");
-  }
+  const claims = await verifyIdentityToken(provider, idToken);
   if (!claims.sub) throw new HttpError(401, "Token missing subject");
 
   const user = await getOrCreateUser(`${provider}:${claims.sub}`, claims.email ?? "", name);
@@ -59,6 +44,30 @@ export async function issueSession(
     .setExpirationTime("30d")
     .sign(appSecret());
   return { token, user };
+}
+
+/** Verify an Apple/Google identity token against the provider's JWKS. Bad tokens → 401. */
+async function verifyIdentityToken(provider: string, idToken: string): Promise<ProviderClaims> {
+  try {
+    if (provider === "apple") {
+      const { payload } = await jwtVerify(idToken, appleJwks, {
+        issuer: "https://appleid.apple.com",
+        audience: APPLE_AUD,
+      });
+      return { sub: String(payload.sub), email: payload.email as string | undefined };
+    }
+    if (provider === "google") {
+      const { payload } = await jwtVerify(idToken, googleJwks, {
+        issuer: ["https://accounts.google.com", "accounts.google.com"],
+        audience: GOOGLE_AUD,
+      });
+      return { sub: String(payload.sub), email: payload.email as string | undefined };
+    }
+    throw new HttpError(400, "Unknown auth provider");
+  } catch (err) {
+    if (err instanceof HttpError) throw err;
+    throw new HttpError(401, "Invalid identity token");
+  }
 }
 
 /** Validate our app session JWT (from the Authorization header) and load the user. */

@@ -24,6 +24,9 @@ param sqlAdminLogin string
 @description('SQL administrator password.')
 param sqlAdminPassword string
 
+@description('Secret used to sign our app session JWTs.')
+param appJwtSecret string
+
 @description('Optional principal to grant data-plane access for local development.')
 param principalId string = ''
 
@@ -195,8 +198,9 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
         { name: 'KEY_VAULT_URI', value: kv.properties.vaultUri }
         { name: 'SQL_SERVER_FQDN', value: sqlServer.properties.fullyQualifiedDomainName }
         { name: 'SQL_DATABASE', value: sqlDb.name }
+        { name: 'SQL_CONNECTION_STRING', value: 'Server=tcp:${sqlServer.properties.fullyQualifiedDomainName},1433;Database=${sqlDb.name};User ID=${sqlAdminLogin};Password=${sqlAdminPassword};Encrypt=true;TrustServerCertificate=false;Connection Timeout=30;' }
         // Native Apple + Google sign-in; APP_JWT_SECRET signs our own session tokens.
-        { name: 'APP_JWT_SECRET', value: '@Microsoft.KeyVault(VaultName=${kv.name};SecretName=app-jwt-secret)' }
+        { name: 'APP_JWT_SECRET', value: appJwtSecret }
         { name: 'APPLE_BUNDLE_ID', value: 'com.foxmillwoods.app' }
         { name: 'GOOGLE_CLIENT_ID', value: googleClientId }
         // Braintree (events/rentals) — secrets from Key Vault; environment is plain:

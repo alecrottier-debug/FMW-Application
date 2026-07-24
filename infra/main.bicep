@@ -20,6 +20,9 @@ param sqlAdminLogin string = 'fmwadmin'
 @description('SQL administrator password. Set with: azd env set SQL_ADMIN_PASSWORD <value>')
 param sqlAdminPassword string
 
+@description('Secret that signs app session JWTs. Auto-generated if not provided.')
+param appJwtSecret string = newGuid()
+
 @description('Object id of the running user/service principal, to grant local data-plane access (Key Vault / Storage). azd sets AZURE_PRINCIPAL_ID automatically.')
 param principalId string = ''
 
@@ -46,6 +49,7 @@ module resources 'resources.bicep' = {
     resourceToken: toLower(uniqueString(subscription().id, environmentName, location))
     sqlAdminLogin: sqlAdminLogin
     sqlAdminPassword: sqlAdminPassword
+    appJwtSecret: appJwtSecret
     principalId: principalId
     googleClientId: googleClientId
     braintreeEnvironment: braintreeEnvironment

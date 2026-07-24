@@ -22,6 +22,9 @@
     },
     "braintreeEnvironment": {
       "value": "${BRAINTREE_ENVIRONMENT=sandbox}"
+    },
+    "appJwtSecret": {
+      "value": "${APP_JWT_SECRET}"
     }
   }
 }
