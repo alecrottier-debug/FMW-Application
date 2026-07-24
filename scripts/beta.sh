@@ -61,6 +61,8 @@ if [ "$DEST" = "upload" ]; then
   if [ -n "${ASC_KEY_PATH:-}" ] && [ -z "${ASC_KEY_ID:-}" ]; then
     ASC_KEY_ID="$(basename "$ASC_KEY_PATH" .p8 | sed 's/^AuthKey_//')"
   fi
+  # xcodebuild requires an ABSOLUTE key path.
+  case "${ASC_KEY_PATH:-}" in /*) ;; ?*) ASC_KEY_PATH="$PWD/$ASC_KEY_PATH" ;; esac
   : "${ASC_KEY_PATH:?No API key. Drop AuthKey_XXXX.p8 in scripts/private/ (see its README).}"
   : "${ASC_ISSUER_ID:?Set ASC_ISSUER_ID in scripts/beta.env (copy scripts/beta.env.example).}"
   echo "▸ Exporting + uploading to TestFlight…"
