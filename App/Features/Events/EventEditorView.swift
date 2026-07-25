@@ -12,11 +12,14 @@ struct EventEditorView: View {
 
     // Basics
     @State private var name = ""
-    @State private var date = ""
-    @State private var start = ""
+    @State private var when = Date()
     @State private var location = "Pavilion"
     @State private var audience = "Family"
     @State private var details = ""
+
+    // Save state
+    @State private var saving = false
+    @State private var errorText: String?
 
     // Ticketing
     @State private var ticketing: Ticketing = .free
@@ -52,7 +55,17 @@ struct EventEditorView: View {
                 if ticketing == .paid { paidSection }
                 wrapUp
 
-                EventEditorFooter(onDraft: {}, onPublish: {})
+                if let errorText {
+                    Text(errorText)
+                        .font(FMW.ui(12.5, .semibold))
+                        .foregroundStyle(FMW.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 18).padding(.top, 4)
+                }
+
+                EventEditorFooter(saving: saving,
+                                  onDraft: { save(status: "draft") },
+                                  onPublish: { save(status: "published") })
                     .padding(.top, 6)
                     .padding(.horizontal, 14)
                     .padding(.bottom, 26)
@@ -71,13 +84,15 @@ struct EventEditorView: View {
         }
         .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 12)
 
-        HStack(alignment: .top, spacing: 10) {
-            EventEditorField(label: "Date") {
-                EventEditorInput(placeholder: "Oct 11, 2026", text: $date)
-            }
-            EventEditorField(label: "Start") {
-                EventEditorInput(placeholder: "4:00 PM", text: $start)
-            }
+        EventEditorField(label: "Date & time") {
+            DatePicker("", selection: $when, in: Date()..., displayedComponents: [.date, .hourAndMinute])
+                .datePickerStyle(.compact)
+                .labelsHidden()
+                .tint(FMW.pine)
+                .padding(.horizontal, 13).padding(.vertical, 8)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(FMW.paper, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).stroke(FMW.line, lineWidth: 1.5))
         }
         .padding(.horizontal, 14).padding(.bottom, 12)
 
@@ -210,6 +225,57 @@ struct EventEditorView: View {
         items.append(PaidItem(name: trimmed, price: price.isEmpty ? "$0" : price, sub: sub))
         newItemName = ""; newItemPrice = ""; newItemLimit = ""
         showAddForm = false
+    }
+
+    /// Create the event (draft or published) via the API, then close.
+    private func save(status: String) {
+        let title = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !title.isEmpty else { errorText = "Give the event a name."; return }
+        errorText = nil
+
+        // Demo mode (no API configured): nothing to persist — just close.
+        guard AppConfig.isAPIConfigured else { dismiss(); return }
+
+        saving = true
+        let iso = ISO8601DateFormatter()
+        let request = CreateEventRequest(
+            title: title,
+            startAt: iso.string(from: when),
+            endAt: nil,
+            location: location,
+            audience: audience,
+            description: details.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : details,
+            ticketingType: ticketing == .paid ? "paid" : "free",
+            budgetTarget: Self.parseMoney(budget),
+            visibility: visibility == "Invite only" ? "invite" : "all",
+            status: status,
+            items: ticketing == .paid ? items.map { item in
+                CreateEventItem(
+                    name: item.name,
+                    price: Self.parseMoney(item.price) ?? 0,
+                    limit: Self.parseLimit(item.sub),
+                    isOptional: item.sub.lowercased().contains("optional")
+                )
+            } : []
+        )
+        Task {
+            do {
+                try await EventsService().create(request)
+                dismiss()
+            } catch {
+                errorText = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+                saving = false
+            }
+        }
+    }
+
+    private static func parseMoney(_ s: String) -> Double? {
+        Double(s.filter { $0.isNumber || $0 == "." })
+    }
+
+    private static func parseLimit(_ s: String) -> Int? {
+        let digits = s.drop { !$0.isNumber }.prefix { $0.isNumber }
+        return digits.isEmpty ? nil : Int(digits)
     }
 }
 
@@ -415,6 +481,7 @@ private struct EventEditorItemCard: View {
 // MARK: - Footer (Save draft · Publish)
 
 private struct EventEditorFooter: View {
+    var saving: Bool = false
     let onDraft: () -> Void
     let onPublish: () -> Void
     var body: some View {
@@ -435,17 +502,21 @@ private struct EventEditorFooter: View {
                 .buttonStyle(.plain)
 
                 Button(action: onPublish) {
-                    Text("Publish event")
-                        .font(FMW.ui(15, .bold))
-                        .foregroundStyle(.white)
-                        .frame(maxWidth: .infinity, minHeight: 50)
-                        .background(FMW.pine, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .shadow(color: FMW.pine.opacity(0.45), radius: 12, x: 0, y: 10)
+                    HStack(spacing: 8) {
+                        if saving { ProgressView().tint(.white) }
+                        Text(saving ? "Publishing…" : "Publish event")
+                            .font(FMW.ui(15, .bold))
+                            .foregroundStyle(.white)
+                    }
+                    .frame(maxWidth: .infinity, minHeight: 50)
+                    .background(FMW.pine, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .shadow(color: FMW.pine.opacity(0.45), radius: 12, x: 0, y: 10)
                 }
                 .buttonStyle(.plain)
             }
         }
         .frame(height: 50)
+        .disabled(saving)
     }
 }
 

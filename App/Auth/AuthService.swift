@@ -77,6 +77,15 @@ final class AuthService {
         GIDSignIn.sharedInstance.signOut()
     }
 
+    /// Update the signed-in member's own account details (name, phone). Refreshes currentUser.
+    func updateProfile(name: String, phone: String?) async throws {
+        let updated: APIUser = try await api.post(
+            "users/me",
+            body: UpdateProfileRequest(name: name, phone: phone)
+        )
+        currentUser = updated
+    }
+
     // MARK: - Session exchange
 
     private func exchange(provider: String, idToken: String, name: String?) async throws {
@@ -135,6 +144,11 @@ struct SessionRequest: Encodable, Sendable {
 struct SessionResponse: Decodable {
     let token: String
     let user: APIUser
+}
+
+struct UpdateProfileRequest: Encodable, Sendable {
+    let name: String
+    let phone: String?
 }
 
 /// Bridges ASAuthorizationController's delegate callbacks to an async continuation.

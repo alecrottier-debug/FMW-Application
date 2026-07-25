@@ -121,7 +121,7 @@ async function getOrCreateUser(providerSub: string, email: string, name?: string
   return mapUser(created.recordset[0]);
 }
 
-function mapUser(r: Record<string, unknown>): User {
+export function mapUser(r: Record<string, unknown>): User {
   const dues = r.duesPaidThrough as Date | null;
   return {
     id: r.id as string,

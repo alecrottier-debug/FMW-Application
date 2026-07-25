@@ -11,6 +11,7 @@
 		01B2D1F5F6D039554BEC4A73 /* APIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D9532ECBFC21AB648763CD /* APIClient.swift */; };
 		0389CEB80006DAE65773D1AE /* KeychainStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECA2F4A16F2AC326691B217F /* KeychainStore.swift */; };
 		046CA96BCF1F1329719238C2 /* EventsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4AC08CC9B96CF414DAC0526 /* EventsView.swift */; };
+		0D9BD0329CB7B6F5938DB78C /* MembersAdminService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5CC4C18FD75D1C4F4FC8E1D1 /* MembersAdminService.swift */; };
 		1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5593871D73CF0E6D79C511BD /* HomeView.swift */; };
 		1346190D46B33954C1947CBD /* Fraunces-Variable.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DC59017D2592795430A5D173 /* Fraunces-Variable.ttf */; };
 		198F92E347AAE4790F775A4B /* PoolView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FBF22E16DEC4C89763797C /* PoolView.swift */; };
@@ -21,6 +22,7 @@
 		257E18D210FFAB6F4B922509 /* RoleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */; };
 		2A2C08D8B1F236D30C2E8F66 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */; };
 		370417DE51B39A35637FF260 /* ReceiptScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591BCED1B8B2D4A6AFA4894 /* ReceiptScanner.swift */; };
+		4125D39590A376A52408EEE8 /* MembersAdminView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 46D34B1FD6FCA7EEDBA30CCC /* MembersAdminView.swift */; };
 		5932B29A7DABC4D6FB939EC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E84284BCCD6EC7353774D /* Assets.xcassets */; };
 		5B65E30229ACE94FB1E47EAB /* DuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFED1816509E68097CE2722 /* DuesView.swift */; };
 		5EEF55DDF78AABDF4AC861EE /* ReceiptOCRTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F500AB629D726AEC333DB8 /* ReceiptOCRTests.swift */; };
@@ -68,6 +70,7 @@
 		36098853752598AE4669B21C /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		36FEB33FDB0AA771010B7CB2 /* EventsService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsService.swift; sourceTree = "<group>"; };
 		37A1B0521048CDDDEA2E77C7 /* Figtree-Variable.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; path = "Figtree-Variable.ttf"; sourceTree = "<group>"; };
+		46D34B1FD6FCA7EEDBA30CCC /* MembersAdminView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembersAdminView.swift; sourceTree = "<group>"; };
 		48CBFE70FC6895DE3176B39E /* CalendarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CalendarView.swift; sourceTree = "<group>"; };
 		4B3FB576B09367915F9B7787 /* FMWStyles.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FMWStyles.swift; sourceTree = "<group>"; };
 		4B9E40C1B709DD0900BBF7B7 /* ScanView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanView.swift; sourceTree = "<group>"; };
@@ -75,6 +78,7 @@
 		4EC8B47E5803E2224890E166 /* DesignTokens.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DesignTokens.swift; sourceTree = "<group>"; };
 		5154FD009227F747D86C278B /* PaymentService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PaymentService.swift; sourceTree = "<group>"; };
 		5593871D73CF0E6D79C511BD /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		5CC4C18FD75D1C4F4FC8E1D1 /* MembersAdminService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MembersAdminService.swift; sourceTree = "<group>"; };
 		615939EE46A0FA94858646ED /* DirectoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryView.swift; sourceTree = "<group>"; };
 		7FA84E06D7CD950AD46FD6A9 /* FoxMillWoodsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxMillWoodsApp.swift; sourceTree = "<group>"; };
 		927350ADDADBE41C2A542113 /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
@@ -181,6 +185,8 @@
 			isa = PBXGroup;
 			children = (
 				615939EE46A0FA94858646ED /* DirectoryView.swift */,
+				5CC4C18FD75D1C4F4FC8E1D1 /* MembersAdminService.swift */,
+				46D34B1FD6FCA7EEDBA30CCC /* MembersAdminView.swift */,
 			);
 			path = Directory;
 			sourceTree = "<group>";
@@ -450,6 +456,8 @@
 				20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */,
 				1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */,
 				0389CEB80006DAE65773D1AE /* KeychainStore.swift in Sources */,
+				0D9BD0329CB7B6F5938DB78C /* MembersAdminService.swift in Sources */,
+				4125D39590A376A52408EEE8 /* MembersAdminView.swift in Sources */,
 				81D9827967F35C20C3B980DB /* MoneyService.swift in Sources */,
 				8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */,
 				AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */,
@@ -518,7 +526,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
@@ -585,7 +593,7 @@
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;

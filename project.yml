@@ -16,7 +16,7 @@ settings:
   base:
     SWIFT_VERSION: "6.0"              # Swift 6 language mode (strict concurrency)
     MARKETING_VERSION: "1.0"          # matches the App Store Connect version record
-    CURRENT_PROJECT_VERSION: "2"      # build 2 — supersedes the rejected build 1 (ITMS-90683)
+    CURRENT_PROJECT_VERSION: "3"      # build 3 — publish-event, account details, members editor
     ENABLE_USER_SCRIPT_SANDBOXING: YES
     SWIFT_EMIT_LOC_STRINGS: YES
 
