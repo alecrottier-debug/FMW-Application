@@ -108,6 +108,28 @@ async function getOrCreateUser(providerSub: string, email: string, name?: string
     .query("SELECT * FROM dbo.Users WHERE authProviderSub = @sub");
   if (existing.recordset.length > 0) return mapUser(existing.recordset[0]);
 
+  // Pre-provisioned invite: a row seeded by email with an unclaimed sub
+  // (authProviderSub LIKE 'invite:%'). Claim it on first sign-in — attach the real
+  // provider sub and adopt the provider's name, preserving the pre-assigned
+  // role/status (e.g. an event coordinator invited ahead of time).
+  if (email) {
+    const invited = await pool
+      .request()
+      .input("email", sql.NVarChar, email)
+      .query("SELECT * FROM dbo.Users WHERE email = @email AND authProviderSub LIKE 'invite:%'");
+    if (invited.recordset.length > 0) {
+      const row = invited.recordset[0];
+      const finalName = name && name.trim() ? name.trim() : (row.name as string);
+      await pool
+        .request()
+        .input("id", sql.UniqueIdentifier, row.id)
+        .input("sub", sql.NVarChar, providerSub)
+        .input("name", sql.NVarChar, finalName)
+        .query("UPDATE dbo.Users SET authProviderSub = @sub, name = @name WHERE id = @id");
+      return mapUser({ ...row, authProviderSub: providerSub, name: finalName });
+    }
+  }
+
   const displayName = name && name.trim() ? name.trim() : email.split("@")[0] || "New neighbor";
   const created = await pool
     .request()
