@@ -77,7 +77,95 @@ private enum WalletShade {
     static let duesDeep     = Color(hex: 0xB8452C)   // .duescard.owing gradient end + button text
     static let stripe       = Color(hex: 0x635BFF)   // .si-card (Stripe)
     static let venmo        = Color(hex: 0x008CFF)   // .si-venmo
+    static let paypal       = Color(hex: 0x0070BA)   // PayPal blue
     static let avatarPurple = Color(hex: 0x8A7CC9)   // Mike K. avatar
+}
+
+// MARK: - Live-summary → row-model mapping (committee dashboard)
+
+private enum WalletMap {
+    static func money(_ v: Double) -> String { fmt(v, fraction: 2) }
+    static func money0(_ v: Double) -> String { fmt(v, fraction: 0) }
+
+    private static func fmt(_ v: Double, fraction: Int) -> String {
+        let f = NumberFormatter()
+        f.numberStyle = .currency
+        f.currencyCode = "USD"
+        f.maximumFractionDigits = fraction
+        f.minimumFractionDigits = fraction
+        return f.string(from: v as NSNumber) ?? "$\(v)"
+    }
+
+    static func initials(_ name: String) -> String {
+        let letters = name.split(separator: " ").prefix(2).compactMap(\.first)
+        return letters.isEmpty ? "•" : String(letters).uppercased()
+    }
+
+    private static let palette: [Color] = [FMW.coral, FMW.water, WalletShade.avatarPurple, FMW.pine, FMW.sun]
+    static func tint(_ i: Int) -> Color { palette[i % palette.count] }
+
+    static func source(_ p: MoneySummaryDTO.PaymentSourceDTO) -> WalletSource {
+        WalletSource(badge: badge(p.source), tint: sourceTint(p.source), name: sourceName(p.source),
+                     detail: "\(p.count) payment\(p.count == 1 ? "" : "s")", amount: money(p.amount))
+    }
+    static func itemSale(_ it: MoneySummaryDTO.ItemSaleDTO, index: Int) -> WalletItemSale {
+        WalletItemSale(tint: tint(index), name: it.name,
+                       qtyTag: "\(it.quantity) SOLD · \(money(it.unitPrice)) EA", amount: money(it.amount))
+    }
+    static func payer(_ o: MoneySummaryDTO.OrderDTO, index: Int) -> WalletPayer {
+        WalletPayer(initials: initials(o.name), tint: tint(index), name: o.name,
+                    method: methodLabel(o.method, date: o.date), total: money(o.total),
+                    lines: o.lines.map { WalletLineItem(label: $0.label, value: money($0.value)) })
+    }
+    static func reimbursement(_ w: MoneySummaryDTO.OwedDTO, index: Int) -> WalletReimbursement {
+        WalletReimbursement(initials: initials(w.name), tint: tint(index), name: w.name,
+                            detail: w.detail ?? "Reimbursement", owed: money(w.owed))
+    }
+
+    static func badge(_ s: String) -> String {
+        switch s {
+        case "card": "CARD"; case "applepay": "AP"; case "paypal": "PP"
+        case "venmo": "V"; case "cash": "$"; case "check": "CK"; case "ach": "ACH"; default: "•"
+        }
+    }
+    static func sourceName(_ s: String) -> String {
+        switch s {
+        case "card": "Card"; case "applepay": "Apple Pay"; case "paypal": "PayPal"
+        case "venmo": "Venmo"; case "cash": "Cash"; case "check": "Check"; case "ach": "Bank · ACH"
+        default: s.capitalized
+        }
+    }
+    static func sourceTint(_ s: String) -> Color {
+        switch s {
+        case "card": WalletShade.stripe; case "venmo": WalletShade.venmo; case "paypal": WalletShade.paypal
+        case "applepay": FMW.ink; case "cash": FMW.pine; case "ach": FMW.water; default: FMW.muted
+        }
+    }
+    static func methodLabel(_ method: String?, date: String?) -> String {
+        let label = method.map(sourceName) ?? "Paid"
+        guard let date, let d = parseISO(date) else { return label }
+        let f = DateFormatter(); f.dateFormat = "MMM d"
+        return "\(label) · \(f.string(from: d))"
+    }
+    private static func parseISO(_ s: String) -> Date? {
+        let withFraction = ISO8601DateFormatter()
+        withFraction.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return withFraction.date(from: s) ?? ISO8601DateFormatter().date(from: s)
+    }
+}
+
+/// A muted placeholder row for a dashboard section with no live data yet.
+private struct WalletEmptyRow: View {
+    let text: String
+    var body: some View {
+        Text(text)
+            .font(FMW.ui(13))
+            .foregroundStyle(FMW.muted)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 14)
+            .walletCard()
+    }
 }
 
 // MARK: - Committee tab switch (.wtabs)
@@ -335,44 +423,62 @@ private struct WalletDashLine: Shape {
 // MARK: - Committee money dashboard
 
 private struct CommitteeDashboard: View {
-    @State private var selectedEvent = "End-of-Summer Luau"
-    private let events = ["End-of-Summer Luau", "Summer Sunset Social", "Fall Chili Cook-off"]
+    // Live books for the selected event; falls back to the prototype samples in
+    // demo mode (no API) or before the first load, matching EventsView's pattern.
+    @State private var events: [EventSummary] = []
+    @State private var selectedTitle = "End-of-Summer Luau"
+    @State private var summary: MoneySummaryDTO?
+
+    private let demoTitles = ["End-of-Summer Luau", "Summer Sunset Social", "Fall Chili Cook-off"]
+    private var titles: [String] { events.isEmpty ? demoTitles : events.map(\.title) }
 
     var body: some View {
         VStack(spacing: 0) {
-            WalletEventSelector(selection: $selectedEvent, events: events)
+            WalletEventSelector(selection: $selectedTitle, events: titles)
                 .padding(.horizontal, 12)
                 .padding(.top, 14)
 
-            WalletBudgetRing()
+            WalletBudgetRing(collected: collected, spent: spent, budget: budget)
                 .padding(.horizontal, 12)
                 .padding(.top, 12)
 
-            // Payments in
-            WalletSubhead(title: "Payments in", trailing: .text("4 sources"))
+            WalletSubhead(title: "Payments in", trailing: .text(paymentsTrailing))
             VStack(spacing: 8) {
-                ForEach(WalletSource.samples) { WalletSourceRow(source: $0) }
+                if sources.isEmpty {
+                    WalletEmptyRow(text: "No payments in yet")
+                } else {
+                    ForEach(sources) { WalletSourceRow(source: $0) }
+                }
             }
             .padding(.horizontal, 12)
 
-            // Sales by item
-            WalletSubhead(title: "Sales by item", trailing: .text("$840.00"))
+            WalletSubhead(title: "Sales by item", trailing: .text(salesTrailing))
             VStack(spacing: 8) {
-                ForEach(WalletItemSale.samples) { WalletItemRow(item: $0) }
+                if itemSales.isEmpty {
+                    WalletEmptyRow(text: "No ticket sales yet")
+                } else {
+                    ForEach(itemSales) { WalletItemRow(item: $0) }
+                }
             }
             .padding(.horizontal, 12)
 
-            // Who paid for what
             WalletSubhead(title: "Who paid for what", trailing: .link("Export →"))
             VStack(spacing: 8) {
-                ForEach(WalletPayer.samples) { WalletPaidWhatCard(payer: $0) }
+                if payers.isEmpty {
+                    WalletEmptyRow(text: "No orders yet")
+                } else {
+                    ForEach(payers) { WalletPaidWhatCard(payer: $0) }
+                }
             }
             .padding(.horizontal, 12)
 
-            // Owed back to volunteers
             WalletSubhead(title: "Owed back to volunteers", trailing: .link("Reimburse →"))
             VStack(spacing: 8) {
-                ForEach(WalletReimbursement.samples) { WalletPersonRow(person: $0) }
+                if reimbursements.isEmpty {
+                    WalletEmptyRow(text: "Nothing owed — all reimbursed")
+                } else {
+                    ForEach(reimbursements) { WalletPersonRow(person: $0) }
+                }
             }
             .padding(.horizontal, 12)
 
@@ -383,6 +489,59 @@ private struct CommitteeDashboard: View {
             .padding(.horizontal, 18)
             .padding(.top, 16)
         }
+        .task { await loadInitial() }
+        .onChange(of: selectedTitle) { Task { await loadSummary() } }
+    }
+
+    // MARK: Mapped rows (live summary → the existing row models, else samples)
+
+    private var collected: Double { summary?.budget.collected ?? 840 }
+    private var spent: Double { summary?.budget.spent ?? 285.55 }
+    private var budget: Double? { summary != nil ? summary?.budget.budget : 1200 }
+
+    private var sources: [WalletSource] {
+        guard let s = summary else { return WalletSource.samples }
+        return s.paymentsIn.map(WalletMap.source)
+    }
+    private var itemSales: [WalletItemSale] {
+        guard let s = summary else { return WalletItemSale.samples }
+        return s.salesByItem.filter { $0.quantity > 0 }.enumerated().map { WalletMap.itemSale($1, index: $0) }
+    }
+    private var payers: [WalletPayer] {
+        guard let s = summary else { return WalletPayer.samples }
+        return s.whoPaidWhat.enumerated().map { WalletMap.payer($1, index: $0) }
+    }
+    private var reimbursements: [WalletReimbursement] {
+        guard let s = summary else { return WalletReimbursement.samples }
+        return s.owedToVolunteers.enumerated().map { WalletMap.reimbursement($1, index: $0) }
+    }
+    private var paymentsTrailing: String {
+        guard let s = summary else { return "\(WalletSource.samples.count) sources" }
+        let n = s.paymentsIn.count
+        return "\(n) source\(n == 1 ? "" : "s")"
+    }
+    private var salesTrailing: String {
+        guard let s = summary else { return "$840.00" }
+        return WalletMap.money(s.salesByItem.reduce(0) { $0 + $1.amount })
+    }
+
+    // MARK: Loading
+
+    private func loadInitial() async {
+        guard AppConfig.isAPIConfigured else { return }
+        guard let list = try? await MoneyService().events(), !list.isEmpty else { return }
+        events = list
+        selectedTitle = list.first?.title ?? selectedTitle
+        await loadSummary()
+    }
+
+    private func loadSummary() async {
+        guard AppConfig.isAPIConfigured,
+              let id = events.first(where: { $0.title == selectedTitle })?.id else {
+            summary = nil
+            return
+        }
+        summary = try? await MoneyService().summary(eventId: id)
     }
 }
 
@@ -422,20 +581,29 @@ private struct WalletEventSelector: View {
 }
 
 /// The budget donut: pine (collected) → sun (spent) → mint2 (remaining budget),
-/// with a paper hole and a "$840 collected" center label.
+/// with a paper hole and a "$X collected" center label. Arc lengths are
+/// proportional to the real ledger; the denominator grows if collected+spent
+/// exceeds the budget so it still renders cleanly.
 private struct WalletBudgetRing: View {
+    let collected: Double
+    let spent: Double
+    let budget: Double?
+
     var body: some View {
+        let denom = max(budget ?? 0, collected + spent, 1)
+        let pineEnd = min(collected / denom, 1)
+        let sunEnd = min((collected + spent) / denom, 1)
         HStack(spacing: 14) {
             ZStack {
                 Circle()
                     .fill(AngularGradient(
                         gradient: Gradient(stops: [
-                            .init(color: FMW.pine, location: 0.00),
-                            .init(color: FMW.pine, location: 0.51),
-                            .init(color: FMW.sun, location: 0.51),
-                            .init(color: FMW.sun, location: 0.70),
-                            .init(color: FMW.mint2, location: 0.70),
-                            .init(color: FMW.mint2, location: 1.00),
+                            .init(color: FMW.pine,  location: 0.0),
+                            .init(color: FMW.pine,  location: pineEnd),
+                            .init(color: FMW.sun,   location: pineEnd),
+                            .init(color: FMW.sun,   location: sunEnd),
+                            .init(color: FMW.mint2, location: sunEnd),
+                            .init(color: FMW.mint2, location: 1.0),
                         ]),
                         center: .center,
                         startAngle: .degrees(-90), endAngle: .degrees(270)))
@@ -444,7 +612,7 @@ private struct WalletBudgetRing: View {
                     .fill(FMW.paper)
                     .frame(width: 72, height: 72)
                 VStack(spacing: 1) {
-                    Text("$840")
+                    Text(WalletMap.money0(collected))
                         .font(FMW.display(18, .bold).monospacedDigit())
                         .foregroundStyle(FMW.ink)
                     Text("collected")
@@ -453,12 +621,14 @@ private struct WalletBudgetRing: View {
                 }
             }
             .accessibilityElement(children: .ignore)
-            .accessibilityLabel("Collected 840 dollars of a 1,200 dollar budget, 285 dollars 55 cents spent.")
+            .accessibilityLabel(
+                "Collected \(WalletMap.money(collected)), spent \(WalletMap.money(spent))"
+                + (budget.map { ", budget \(WalletMap.money($0))" } ?? "") + ".")
 
             VStack(alignment: .leading, spacing: 8) {
-                legend(FMW.pine,  "Collected", "$840.00")
-                legend(FMW.sun,   "Spent",     "$285.55")
-                legend(FMW.mint2, "Budget",    "$1,200")
+                legend(FMW.pine,  "Collected", WalletMap.money(collected))
+                legend(FMW.sun,   "Spent",     WalletMap.money(spent))
+                legend(FMW.mint2, "Budget",    budget.map { WalletMap.money($0) } ?? "—")
             }
         }
         .padding(16)

@@ -28,6 +28,7 @@
 		74A488590C33E22570D5CC55 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D812360C7B71FDE3FE2289AC /* EventEditorView.swift */; };
 		75DD179C4BEDFFE550FF9713 /* DirectoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615939EE46A0FA94858646ED /* DirectoryView.swift */; };
 		7F982E2E6D692A0AB1746D5A /* RentalsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 97E8E89CA1AAB682F2440147 /* RentalsView.swift */; };
+		81D9827967F35C20C3B980DB /* MoneyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94CC46FCCF47AE8737810E7C /* MoneyService.swift */; };
 		8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5154FD009227F747D86C278B /* PaymentService.swift */; };
 		9542F35DC5FDE31A3EC9BEAC /* Fraunces-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */; };
 		97FD2EC1B9B8EA694ECA2D27 /* RootTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B7D510BBF3259AD6B08788B2 /* RootTabView.swift */; };
@@ -77,6 +78,7 @@
 		615939EE46A0FA94858646ED /* DirectoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DirectoryView.swift; sourceTree = "<group>"; };
 		7FA84E06D7CD950AD46FD6A9 /* FoxMillWoodsApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoxMillWoodsApp.swift; sourceTree = "<group>"; };
 		927350ADDADBE41C2A542113 /* YouView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YouView.swift; sourceTree = "<group>"; };
+		94CC46FCCF47AE8737810E7C /* MoneyService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoneyService.swift; sourceTree = "<group>"; };
 		97E8E89CA1AAB682F2440147 /* RentalsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RentalsView.swift; sourceTree = "<group>"; };
 		9B6E84284BCCD6EC7353774D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B7D510BBF3259AD6B08788B2 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 			children = (
 				BFFED1816509E68097CE2722 /* DuesView.swift */,
 				BA446466ADA7C3275FA71070 /* ExpenseService.swift */,
+				94CC46FCCF47AE8737810E7C /* MoneyService.swift */,
 				F591BCED1B8B2D4A6AFA4894 /* ReceiptScanner.swift */,
 				4B9E40C1B709DD0900BBF7B7 /* ScanView.swift */,
 				4CBA321C6612785343519DFF /* WalletView.swift */,
@@ -447,6 +450,7 @@
 				20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */,
 				1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */,
 				0389CEB80006DAE65773D1AE /* KeychainStore.swift in Sources */,
+				81D9827967F35C20C3B980DB /* MoneyService.swift in Sources */,
 				8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */,
 				AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */,
 				198F92E347AAE4790F775A4B /* PoolView.swift in Sources */,
