@@ -35,6 +35,10 @@ struct RootTabView: View {
     }
 
     @State private var selection: Tab = .home
+    @Environment(AuthService.self) private var auth
+
+    /// The signed-in user's role drives which views/features appear (server enforces too).
+    private var role: FMWRole { auth.currentUser?.role ?? .resident }
 
     var body: some View {
         // QA hook: `SIMCTL_CHILD_FMW_SCREEN=<name>` renders one screen full-bleed
@@ -55,15 +59,15 @@ struct RootTabView: View {
             NavigationStack {
                 HomeView(onOpenEvents: { selection = .events })
                     .toolbar(.hidden, for: .navigationBar)
-                    .fmwDestinations()
+                    .fmwDestinations(role: role)
             }
             .tag(Tab.home)
             .tabItem { Label(Tab.home.title, systemImage: Tab.home.symbol) }
 
             NavigationStack {
-                EventsView()
+                EventsView(role: role)
                     .toolbar(.hidden, for: .navigationBar)
-                    .fmwDestinations()
+                    .fmwDestinations(role: role)
             }
             .tag(Tab.events)
             .tabItem { Label(Tab.events.title, systemImage: Tab.events.symbol) }
@@ -73,9 +77,9 @@ struct RootTabView: View {
                 .tabItem { Label(Tab.calendar.title, systemImage: Tab.calendar.symbol) }
 
             NavigationStack {
-                WalletView()
+                WalletView(role: role)
                     .toolbar(.hidden, for: .navigationBar)
-                    .fmwDestinations()
+                    .fmwDestinations(role: role)
             }
             .tag(Tab.wallet)
             .tabItem { Label(Tab.wallet.title, systemImage: Tab.wallet.symbol) }
@@ -95,9 +99,9 @@ enum AppRoute: Hashable {
 }
 
 private extension View {
-    func fmwDestinations() -> some View {
+    func fmwDestinations(role: FMWRole) -> some View {
         navigationDestination(for: AppRoute.self) { route in
-            AppRouteView(route: route)
+            AppRouteView(route: route, role: role)
                 .toolbar(.hidden, for: .navigationBar)
         }
     }
@@ -106,12 +110,13 @@ private extension View {
 /// Concrete-view switch (no `AnyView`) mapping a route to its screen.
 private struct AppRouteView: View {
     let route: AppRoute
+    let role: FMWRole
     @ViewBuilder var body: some View {
         switch route {
         case .eventDetail: EventDetailView()
         case .eventEditor: EventEditorView()
         case .rentals:     RentalsView()
-        case .directory:   DirectoryView()
+        case .directory:   DirectoryView(role: role)
         case .pool:        PoolView()
         case .dues:        DuesView()
         case .scan:        ScanView()
@@ -147,4 +152,7 @@ private struct DebugScreen: View {
 
 #Preview {
     RootTabView()
+        .environment(AuthService())
+        .environment(PaymentService())
+        .environment(BraintreeService())
 }

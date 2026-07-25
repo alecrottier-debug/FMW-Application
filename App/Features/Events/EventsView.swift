@@ -7,6 +7,9 @@ import SwiftUI
 /// navigates to the detail/editor; this view only builds the visuals.
 /// Built to match Design/prototype.html.
 struct EventsView: View {
+    /// Coordinators+ get the "Plan a new event" entry (event creation is server-enforced).
+    var role: FMWRole = .resident
+
     // Chevron / trailing glyph tint from the prototype (.evrow .chev = #c7c0af).
     private static let chevron = Color(hex: 0xC7C0AF)
 
@@ -46,12 +49,14 @@ struct EventsView: View {
                     .padding(.bottom, 10)
                 }
 
-                NavigationLink(value: AppRoute.eventEditor) {
-                    PlanEventCard()
+                if role.canCreateEvents {
+                    NavigationLink(value: AppRoute.eventEditor) {
+                        PlanEventCard()
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal, 12)
+                    .padding(.top, 12)
                 }
-                .buttonStyle(.plain)
-                .padding(.horizontal, 12)
-                .padding(.top, 12)
 
                 Color.clear.frame(height: 24)
             }
