@@ -70,6 +70,8 @@ targets:
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
         ITSAppUsesNonExemptEncryption: false
+        # Scan → expense: VisionKit document camera reads receipts on device.
+        NSCameraUsageDescription: "Fox Mill Woods uses the camera to scan receipts so coordinators can track event expenses."
         UIAppFonts:                       # matches FMW.display(Fraunces) / FMW.ui(Figtree)
           - Fraunces-Variable.ttf
           - Figtree-Variable.ttf

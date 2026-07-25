@@ -14,6 +14,7 @@
   "dependencies": {
     "@azure/functions": "^4.5.0",
     "@azure/identity": "^4.4.1",
+    "@azure/storage-blob": "^12.33.0",
     "braintree": "^3.24.0",
     "jose": "^5.9.6",
     "mssql": "^11.0.1",

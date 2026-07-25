@@ -194,6 +194,9 @@ resource api 'Microsoft.Web/sites@2024-04-01' = {
       ftpsState: 'Disabled'
       appSettings: [
         { name: 'AzureWebJobsStorage__accountName', value: storage.name }
+        // Receipt images (Scan → expense): private blob container, identity-based access.
+        { name: 'RECEIPTS_STORAGE_ACCOUNT', value: storage.name }
+        { name: 'RECEIPTS_CONTAINER', value: receiptsContainerName }
         { name: 'APPLICATIONINSIGHTS_CONNECTION_STRING', value: appInsights.properties.ConnectionString }
         { name: 'KEY_VAULT_URI', value: kv.properties.vaultUri }
         { name: 'SQL_SERVER_FQDN', value: sqlServer.properties.fullyQualifiedDomainName }

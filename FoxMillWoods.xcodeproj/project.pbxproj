@@ -20,8 +20,10 @@
 		233440CC8DF6FA6A40F3CD98 /* AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6FFCC9578682F03B73828F9 /* AppConfig.swift */; };
 		257E18D210FFAB6F4B922509 /* RoleAndTokenTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */; };
 		2A2C08D8B1F236D30C2E8F66 /* StripePaymentSheet in Frameworks */ = {isa = PBXBuildFile; productRef = A06C4E7C0D470E0206F48DA7 /* StripePaymentSheet */; };
+		370417DE51B39A35637FF260 /* ReceiptScanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = F591BCED1B8B2D4A6AFA4894 /* ReceiptScanner.swift */; };
 		5932B29A7DABC4D6FB939EC2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9B6E84284BCCD6EC7353774D /* Assets.xcassets */; };
 		5B65E30229ACE94FB1E47EAB /* DuesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BFFED1816509E68097CE2722 /* DuesView.swift */; };
+		5EEF55DDF78AABDF4AC861EE /* ReceiptOCRTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7F500AB629D726AEC333DB8 /* ReceiptOCRTests.swift */; };
 		68E063245EC3353C6DBF2FAA /* WalletView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CBA321C6612785343519DFF /* WalletView.swift */; };
 		74A488590C33E22570D5CC55 /* EventEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D812360C7B71FDE3FE2289AC /* EventEditorView.swift */; };
 		75DD179C4BEDFFE550FF9713 /* DirectoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 615939EE46A0FA94858646ED /* DirectoryView.swift */; };
@@ -34,6 +36,7 @@
 		A6BEF2FFF64E69CA6A80C82C /* YouView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 927350ADDADBE41C2A542113 /* YouView.swift */; };
 		AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2464721EAE8F60BE46678169 /* PlaceholderScreen.swift */; };
 		B1864F263129C24579613879 /* BraintreeService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9857D8A7F2F4354F170EFD9 /* BraintreeService.swift */; };
+		B7E56C4D009AE5E9C71BCC5A /* ExpenseService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA446466ADA7C3275FA71070 /* ExpenseService.swift */; };
 		BB1FDB4244F2D064C264D70E /* BraintreeDropIn in Frameworks */ = {isa = PBXBuildFile; productRef = 5CF665A5ADEE53FD4BE8CC9B /* BraintreeDropIn */; };
 		BD4E15A749D69F92D7CE80DC /* Figtree-OFL.txt in Resources */ = {isa = PBXBuildFile; fileRef = 255D019A11BB00D494D300FE /* Figtree-OFL.txt */; };
 		CB536B4E19A49622506AAD0E /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 994797E699100347F7324871 /* GoogleSignIn */; };
@@ -78,8 +81,10 @@
 		9B6E84284BCCD6EC7353774D /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		B7D510BBF3259AD6B08788B2 /* RootTabView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootTabView.swift; sourceTree = "<group>"; };
 		B7D9532ECBFC21AB648763CD /* APIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIClient.swift; sourceTree = "<group>"; };
+		BA446466ADA7C3275FA71070 /* ExpenseService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpenseService.swift; sourceTree = "<group>"; };
 		BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoleAndTokenTests.swift; sourceTree = "<group>"; };
 		BFFED1816509E68097CE2722 /* DuesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DuesView.swift; sourceTree = "<group>"; };
+		C7F500AB629D726AEC333DB8 /* ReceiptOCRTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptOCRTests.swift; sourceTree = "<group>"; };
 		D4AC08CC9B96CF414DAC0526 /* EventsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventsView.swift; sourceTree = "<group>"; };
 		D812360C7B71FDE3FE2289AC /* EventEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EventEditorView.swift; sourceTree = "<group>"; };
 		D9857D8A7F2F4354F170EFD9 /* BraintreeService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BraintreeService.swift; sourceTree = "<group>"; };
@@ -90,6 +95,7 @@
 		F03D2907EA9A401D39BCE6D5 /* Fraunces-OFL.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = "Fraunces-OFL.txt"; sourceTree = "<group>"; };
 		F048A7C4F398DDD1DE316A58 /* AuthView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthView.swift; sourceTree = "<group>"; };
 		F4FBF22E16DEC4C89763797C /* PoolView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PoolView.swift; sourceTree = "<group>"; };
+		F591BCED1B8B2D4A6AFA4894 /* ReceiptScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReceiptScanner.swift; sourceTree = "<group>"; };
 		F6FFCC9578682F03B73828F9 /* AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppConfig.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -137,6 +143,7 @@
 		3C29AC3C04A6D040B1B2E5DB /* FoxMillWoodsTests */ = {
 			isa = PBXGroup;
 			children = (
+				C7F500AB629D726AEC333DB8 /* ReceiptOCRTests.swift */,
 				BCF8182CB022D4CF5ED3732F /* RoleAndTokenTests.swift */,
 			);
 			path = FoxMillWoodsTests;
@@ -266,6 +273,8 @@
 			isa = PBXGroup;
 			children = (
 				BFFED1816509E68097CE2722 /* DuesView.swift */,
+				BA446466ADA7C3275FA71070 /* ExpenseService.swift */,
+				F591BCED1B8B2D4A6AFA4894 /* ReceiptScanner.swift */,
 				4B9E40C1B709DD0900BBF7B7 /* ScanView.swift */,
 				4CBA321C6612785343519DFF /* WalletView.swift */,
 			);
@@ -433,6 +442,7 @@
 				74A488590C33E22570D5CC55 /* EventEditorView.swift in Sources */,
 				9D7497B956D871503C0342EC /* EventsService.swift in Sources */,
 				046CA96BCF1F1329719238C2 /* EventsView.swift in Sources */,
+				B7E56C4D009AE5E9C71BCC5A /* ExpenseService.swift in Sources */,
 				01704366466EBB9D9C02129B /* FMWStyles.swift in Sources */,
 				20915E1FE698534C7A15EC92 /* FoxMillWoodsApp.swift in Sources */,
 				1249CA9A420B13CEA4772924 /* HomeView.swift in Sources */,
@@ -440,6 +450,7 @@
 				8B83AC932AD5A4FCC472893E /* PaymentService.swift in Sources */,
 				AE4DE10125656CC0FCAA07C9 /* PlaceholderScreen.swift in Sources */,
 				198F92E347AAE4790F775A4B /* PoolView.swift in Sources */,
+				370417DE51B39A35637FF260 /* ReceiptScanner.swift in Sources */,
 				7F982E2E6D692A0AB1746D5A /* RentalsView.swift in Sources */,
 				97FD2EC1B9B8EA694ECA2D27 /* RootTabView.swift in Sources */,
 				E9D02DD19A89CCC7A7B28A9C /* RootView.swift in Sources */,
@@ -453,6 +464,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5EEF55DDF78AABDF4AC861EE /* ReceiptOCRTests.swift in Sources */,
 				257E18D210FFAB6F4B922509 /* RoleAndTokenTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

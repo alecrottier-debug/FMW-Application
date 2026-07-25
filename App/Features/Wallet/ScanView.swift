@@ -1,22 +1,54 @@
 import SwiftUI
+import UIKit
+import VisionKit
 
 /// Scan — receipt capture → review expense (spec money flow, prototype
-/// data-screen="scan"). A dark on-device camera phase (striped viewfinder,
-/// floating receipt ghost, reticle + sweep, shutter) flips to a "Review expense"
-/// form: the parsed merchant / date / total, plus chip pickers to assign a
-/// category, the person who paid, and the event to charge it to. Every scan
-/// writes a line item back to an event so "who paid for what" reconciles.
+/// data-screen="scan"). The styled dark viewfinder is the launch state; its
+/// shutter opens VisionKit's document camera, we read the merchant / date / total
+/// on device (Vision), and flip to a "Review expense" form pre-filled with what we
+/// found — every field editable, because OCR is a head start, not the last word.
+/// Saving uploads the receipt image to the private blob container and writes an
+/// Expense (coordinator-gated server-side) so "owed back to volunteers" reconciles.
+///
+/// On a device without the document camera (Simulator / QA screenshots) it falls
+/// back to the prototype's sample review so the flow stays demoable.
 /// Built to match Design/prototype.html.
 struct ScanView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(AuthService.self) private var auth
 
     private enum Phase { case camera, review }
     @State private var phase: Phase = .camera
 
+    // Capture + OCR
+    @State private var presentingScanner = false
+    @State private var capturedImage: UIImage?
+    @State private var isReading = false
+    @State private var fieldsFound = 0
+
+    // Editable parsed fields
+    @State private var merchant = ""
+    @State private var dateText = ""
+    @State private var totalText = ""
+
+    // Chip selections + live picker data
     @State private var category = "Food & Beverage"
-    @State private var paidBy   = "Sarah M."
-    @State private var event    = "End-of-Summer Luau"
+    @State private var paidBy = ""
+    @State private var event = ""
+    @State private var events: [EventSummary] = []
+    @State private var neighbors: [DirectoryEntry] = []
+
+    // Save
+    @State private var saving = false
+    @State private var errorText: String?
+
+    private let categoryOptions = ["Food & Beverage", "Supplies", "Decor", "Rentals"]
+    private let demoPayers = ["Sarah M.", "Dana R.", "Mike K.", "Me"]
+    private let demoEvents = ["End-of-Summer Luau", "Summer Sunset Social"]
+
+    private var payerOptions: [String] { neighbors.isEmpty ? demoPayers : neighbors.map(\.name) }
+    private var eventOptions: [String] { events.isEmpty ? demoEvents : events.map(\.title) }
 
     var body: some View {
         ScrollView {
@@ -27,9 +59,17 @@ struct ScanView: View {
         }
         .scrollIndicators(.hidden)
         .background(FMW.cream.ignoresSafeArea())
+        .task { await loadPickers() }
+        .fullScreenCover(isPresented: $presentingScanner) {
+            DocumentScanner { image in
+                presentingScanner = false
+                if let image { handleCapture(image) }
+            }
+            .ignoresSafeArea()
+        }
     }
 
-    // MARK: Camera phase
+    // MARK: Camera phase (styled launch state → real scanner)
 
     private var cameraPhase: some View {
         VStack(spacing: 0) {
@@ -54,7 +94,7 @@ struct ScanView: View {
                     .foregroundStyle(.white.opacity(0.8))
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
-                Shutter { phase = .review }
+                Shutter { startScan() }
             }
             .padding(.horizontal, 18)
             .padding(.top, 16)
@@ -69,9 +109,8 @@ struct ScanView: View {
 
     private var reviewPhase: some View {
         VStack(spacing: 0) {
-            // detail hero (on cream)
             VStack(alignment: .leading, spacing: 0) {
-                ScanBackButton(title: "‹ Rescan", dark: false) { phase = .camera }
+                ScanBackButton(title: "‹ Rescan", dark: false) { rescan() }
                 Text("Review expense")
                     .font(FMW.display(24, .bold))
                     .foregroundStyle(FMW.ink)
@@ -82,46 +121,191 @@ struct ScanView: View {
             .padding(.top, 12)
             .padding(.bottom, 6)
 
-            Flash()
+            Flash(isReading: isReading, fieldsFound: fieldsFound)
                 .padding(.top, 8)
                 .padding(.bottom, 14)
 
             VStack(alignment: .leading, spacing: 12) {
-                ParsedField(label: "Merchant", value: "COSTCO WHOLESALE #1071")
-                ParsedField(label: "Date", value: "Aug 28, 2026")
-                ParsedField(label: "Total", value: "$142.60", tabular: true)
+                EditableParsedField(label: "Merchant", placeholder: "Merchant name",
+                                    text: $merchant)
+                EditableParsedField(label: "Date", placeholder: "MMM d, yyyy",
+                                    text: $dateText)
+                EditableParsedField(label: "Total", placeholder: "$0.00",
+                                    text: $totalText, keyboard: .decimalPad, tabular: true)
 
-                ChipField(label: "Category",
-                          options: ["Food & Beverage", "Supplies", "Decor", "Rentals"],
-                          selection: $category)
-                ChipField(label: "Paid by",
-                          options: ["Sarah M.", "Dana R.", "Mike K.", "Me"],
-                          selection: $paidBy)
-                ChipField(label: "Apply to event",
-                          options: ["End-of-Summer Luau", "Summer Sunset Social"],
-                          selection: $event)
+                ChipField(label: "Category", options: categoryOptions, selection: $category)
+                ChipField(label: "Paid by", options: payerOptions, selection: $paidBy)
+                ChipField(label: "Apply to event", options: eventOptions, selection: $event)
             }
             .padding(.horizontal, 18)
 
-            Button { dismiss() } label: {
-                Text("Save expense · track to \(trackName)")
-                    .font(FMW.ui(15, .bold))
-                    .foregroundStyle(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(FMW.pine, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                    .shadow(color: FMW.pine.opacity(0.5), radius: 11, x: 0, y: 12)
+            if let errorText {
+                Text(errorText)
+                    .font(FMW.ui(12.5, .semibold))
+                    .foregroundStyle(FMW.danger)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 18)
+                    .padding(.top, 10)
+            }
+
+            Button { Task { await save() } } label: {
+                HStack(spacing: 8) {
+                    if saving { ProgressView().tint(.white) }
+                    Text(saving ? "Saving…" : "Save expense · track to \(trackName)")
+                        .font(FMW.ui(15, .bold))
+                        .foregroundStyle(.white)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+                .background(FMW.pine, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .shadow(color: FMW.pine.opacity(0.5), radius: 11, x: 0, y: 12)
             }
             .buttonStyle(.plain)
+            .disabled(saving)
             .padding(.horizontal, 18)
-            .padding(.top, 6)
+            .padding(.top, 12)
             .padding(.bottom, 22)
         }
     }
 
     private var trackName: String {
-        paidBy == "Me" ? "you" : String(paidBy.split(separator: " ").first ?? "")
+        paidBy == "Me" ? "you" : String(paidBy.split(separator: " ").first ?? "the payer")
     }
+
+    // MARK: Actions
+
+    private func startScan() {
+        errorText = nil
+        if DocumentScanner.isAvailable {
+            presentingScanner = true
+        } else {
+            fillDemo()             // Simulator / no camera → prototype sample
+            phase = .review
+        }
+    }
+
+    private func handleCapture(_ image: UIImage) {
+        capturedImage = image
+        isReading = true
+        fieldsFound = 0
+        merchant = ""; dateText = ""; totalText = ""
+        phase = .review
+        Task {
+            let parsed = await ReceiptOCR.scan(image)
+            apply(parsed)
+            isReading = false
+        }
+    }
+
+    private func apply(_ parsed: ParsedReceipt) {
+        if let m = parsed.merchant { merchant = m }
+        if let d = parsed.date { dateText = Self.displayDate.string(from: d) }
+        if let t = parsed.total { totalText = "$" + (Self.amountFmt.string(from: t as NSDecimalNumber) ?? "\(t)") }
+        fieldsFound = parsed.fieldsFound
+    }
+
+    private func rescan() {
+        errorText = nil
+        capturedImage = nil
+        phase = .camera
+    }
+
+    private func fillDemo() {
+        merchant = "COSTCO WHOLESALE #1071"
+        dateText = "Aug 28, 2026"
+        totalText = "$142.60"
+        fieldsFound = 3
+    }
+
+    private func save() async {
+        errorText = nil
+        guard let amount = Self.parseAmount(totalText), amount > 0 else {
+            errorText = "Enter the receipt total (e.g. $142.60)."
+            return
+        }
+        // Demo mode (no API): keep the prototype behavior — just close.
+        guard AppConfig.isAPIConfigured else { dismiss(); return }
+
+        saving = true
+        let request = CreateExpenseRequest(
+            eventId: eventId(for: event),
+            paidByUserId: payerId(for: paidBy) ?? auth.currentUser?.id,
+            merchant: merchant.trimmed.isEmpty ? nil : merchant.trimmed,
+            date: Self.isoDate(from: dateText),
+            amount: amount,
+            tax: nil,
+            category: category,
+            receiptBase64: capturedImage?.jpegData(compressionQuality: 0.7)?.base64EncodedString(),
+            receiptContentType: "image/jpeg"
+        )
+        do {
+            try await ExpenseService().create(request)
+            dismiss()
+        } catch {
+            errorText = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            saving = false
+        }
+    }
+
+    private func loadPickers() async {
+        guard AppConfig.isAPIConfigured else { return }
+        let service = ExpenseService()
+        if let live = try? await service.events(), !live.isEmpty {
+            events = live
+            if event.isEmpty { event = live[0].title }
+        }
+        if let people = try? await service.neighbors(), !people.isEmpty {
+            neighbors = people
+            if paidBy.isEmpty {
+                paidBy = auth.currentUser.flatMap { me in people.first { $0.id == me.id }?.name }
+                    ?? people[0].name
+            }
+        }
+        if event.isEmpty { event = demoEvents[0] }
+        if paidBy.isEmpty { paidBy = auth.currentUser?.name ?? demoPayers[0] }
+    }
+
+    private func eventId(for title: String) -> String? { events.first { $0.title == title }?.id }
+    private func payerId(for name: String) -> String? { neighbors.first { $0.name == name }?.id }
+
+    // MARK: Formatting helpers
+
+    private static let displayDate: DateFormatter = {
+        let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "MMM d, yyyy"; return f
+    }()
+    private static let amountFmt: NumberFormatter = {
+        let f = NumberFormatter(); f.numberStyle = .decimal
+        f.minimumFractionDigits = 2; f.maximumFractionDigits = 2; return f
+    }()
+
+    private static func parseAmount(_ s: String) -> Double? {
+        Double(s.filter { $0.isNumber || $0 == "." })
+    }
+
+    /// Turn the (editable) display date back into "YYYY-MM-DD", or nil if unparseable.
+    private static func isoDate(from text: String) -> String? {
+        let candidates = ["MMM d, yyyy", "MMMM d, yyyy", "MM/dd/yyyy", "M/d/yyyy",
+                          "MM/dd/yy", "M/d/yy", "yyyy-MM-dd", "MM-dd-yyyy"]
+        let parser = DateFormatter(); parser.locale = Locale(identifier: "en_US_POSIX")
+        for format in candidates {
+            parser.dateFormat = format
+            if let date = parser.date(from: text.trimmed) {
+                let out = DateFormatter(); out.locale = Locale(identifier: "en_US_POSIX")
+                out.dateFormat = "yyyy-MM-dd"
+                return out.string(from: date)
+            }
+        }
+        return nil
+    }
+}
+
+private extension String {
+    var trimmed: String { trimmingCharacters(in: .whitespacesAndNewlines) }
+}
+
+extension DocumentScanner {
+    /// True when the on-device document camera is available (false on Simulator).
+    static var isAvailable: Bool { VNDocumentCameraViewController.isSupported }
 }
 
 // MARK: - One-off shades sampled from the prototype (no raw hex in view bodies)
@@ -336,24 +520,37 @@ private struct Shutter: View {
 // MARK: - Parsed review fields
 
 private struct Flash: View {
+    let isReading: Bool
+    let fieldsFound: Int
+
     var body: some View {
         HStack(spacing: 8) {
-            Image(systemName: "checkmark")
-                .font(.system(size: 13, weight: .bold))
-                .foregroundStyle(FMW.pine)
-            Text("Read on device · 3 fields found")
-                .font(FMW.ui(13, .bold))
-                .foregroundStyle(FMW.pine)
+            if isReading {
+                ProgressView().tint(FMW.pine)
+                Text("Reading receipt on device…")
+                    .font(FMW.ui(13, .bold))
+                    .foregroundStyle(FMW.pine)
+            } else {
+                Image(systemName: "checkmark")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(FMW.pine)
+                Text("Read on device · \(fieldsFound) field\(fieldsFound == 1 ? "" : "s") found")
+                    .font(FMW.ui(13, .bold))
+                    .foregroundStyle(FMW.pine)
+            }
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .combine)
     }
 }
 
-/// A parsed, read-on-device field (.field.parsed-hit) with an Edit affordance.
-private struct ParsedField: View {
+/// A parsed, read-on-device field (.field.parsed-hit) — now an editable text field
+/// so the coordinator can correct anything OCR got wrong.
+private struct EditableParsedField: View {
     let label: String
-    let value: String
+    let placeholder: String
+    @Binding var text: String
+    var keyboard: UIKeyboardType = .default
     var tabular: Bool = false
 
     var body: some View {
@@ -363,10 +560,13 @@ private struct ParsedField: View {
                 .tracking(0.5)
                 .foregroundStyle(FMW.muted)
             HStack {
-                valueText
-                Spacer(minLength: 8)
-                Text("Edit")
-                    .font(FMW.ui(11, .bold))
+                TextField(placeholder, text: $text)
+                    .font(tabular ? FMW.ui(15, .semibold).monospacedDigit() : FMW.ui(15, .semibold))
+                    .foregroundStyle(FMW.ink)
+                    .keyboardType(keyboard)
+                    .autocorrectionDisabled()
+                Image(systemName: "pencil")
+                    .font(.system(size: 12, weight: .bold))
                     .foregroundStyle(FMW.pine)
             }
             .padding(.horizontal, 13)
@@ -378,15 +578,8 @@ private struct ParsedField: View {
             )
         }
         .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(label): \(value)")
-        .accessibilityHint("Double tap to edit")
-    }
-
-    private var valueText: some View {
-        let base = tabular
-            ? Text(value).font(FMW.ui(15, .semibold)).monospacedDigit()
-            : Text(value).font(FMW.ui(15, .semibold))
-        return base.foregroundStyle(FMW.ink)
+        .accessibilityLabel("\(label): \(text.isEmpty ? placeholder : text)")
+        .accessibilityHint("Editable")
     }
 }
 
@@ -481,4 +674,5 @@ private struct ChipFlow: Layout {
 
 #Preview {
     ScanView()
+        .environment(AuthService())
 }

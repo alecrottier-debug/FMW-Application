@@ -37,6 +37,8 @@
 	<string>719141246113-3vbeumk61r13ce3hp5sk2rbsbpmb4d61.apps.googleusercontent.com</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>NSCameraUsageDescription</key>
+	<string>Fox Mill Woods uses the camera to scan receipts so coordinators can track event expenses.</string>
 	<key>STRIPE_PUBLISHABLE_KEY</key>
 	<string></string>
 	<key>UIAppFonts</key>
