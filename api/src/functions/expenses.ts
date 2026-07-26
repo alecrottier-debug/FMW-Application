@@ -1,6 +1,6 @@
 import { app, HttpRequest } from "@azure/functions";
 import { randomUUID } from "crypto";
-import { assertRole, requireUser } from "../lib/auth";
+import { assertEventAccess, assertRole, requireUser } from "../lib/auth";
 import { getPool, sql } from "../lib/db";
 import { audit } from "../lib/audit";
 import { errorResponse, HttpError, json } from "../lib/http";
@@ -43,6 +43,10 @@ app.http("createExpense", {
       assertRole(user, "eventCoordinator");
 
       const body = (await request.json()) as CreateExpenseBody;
+      // Coordinators may only record expenses against their own events; a general
+      // (no-event) expense is a board-only, all-neighborhood action.
+      if (body.eventId) await assertEventAccess(user, body.eventId);
+      else assertRole(user, "boardMember");
       const amount = Number(body.amount);
       if (!Number.isFinite(amount) || amount <= 0) {
         throw new HttpError(400, "A positive amount is required");
@@ -110,6 +114,10 @@ app.http("listExpenses", {
       assertRole(user, "eventCoordinator");
 
       const eventId = request.query.get("eventId");
+      // Per-event listing is scoped to the coordinator's own event; the
+      // all-events ledger (no eventId) is board-only (spec §2).
+      if (eventId) await assertEventAccess(user, eventId);
+      else assertRole(user, "boardMember");
       const pool = await getPool();
       const req = pool.request();
       let where = "";
@@ -145,10 +153,13 @@ app.http("getExpenseReceipt", {
       const res = await pool
         .request()
         .input("id", sql.UniqueIdentifier, request.params.id)
-        .query("SELECT receiptBlobUrl FROM dbo.Expenses WHERE id = @id");
+        .query("SELECT eventId, receiptBlobUrl FROM dbo.Expenses WHERE id = @id");
       if (res.recordset.length === 0) throw new HttpError(404, "Expense not found");
+      const row = res.recordset[0];
+      if (row.eventId) await assertEventAccess(user, row.eventId as string);
+      else assertRole(user, "boardMember");
 
-      const url = res.recordset[0].receiptBlobUrl as string | null;
+      const url = row.receiptBlobUrl as string | null;
       const blobName = url ? blobNameFromUrl(url) : null;
       if (!blobName) throw new HttpError(404, "No receipt on file");
 

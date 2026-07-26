@@ -1,5 +1,5 @@
 import { app, HttpRequest } from "@azure/functions";
-import { requireUser } from "../lib/auth";
+import { assertRole, requireUser } from "../lib/auth";
 import { getPool, sql } from "../lib/db";
 import { errorResponse, HttpError, json } from "../lib/http";
 import { stripe } from "../lib/stripe";
@@ -15,6 +15,7 @@ app.http("createDuesIntent", {
   handler: async (request: HttpRequest) => {
     try {
       const user = await requireUser(request);
+      assertRole(user, "resident"); // active members only
       const body = (await request.json()) as { method: "ach" | "card" };
       const method = body.method === "card" ? "card" : "ach";
 

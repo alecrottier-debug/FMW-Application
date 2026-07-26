@@ -1,5 +1,5 @@
 import { app, HttpRequest } from "@azure/functions";
-import { assertRole, requireUser } from "../lib/auth";
+import { assertEventAccess, assertRole, requireUser } from "../lib/auth";
 import { getPool, sql } from "../lib/db";
 import { errorResponse, HttpError, json } from "../lib/http";
 
@@ -23,6 +23,7 @@ app.http("eventMoneySummary", {
         .input("id", sql.UniqueIdentifier, eventId)
         .query("SELECT id, title, budgetTarget FROM dbo.Events WHERE id = @id");
       if (ev.recordset.length === 0) throw new HttpError(404, "Event not found");
+      await assertEventAccess(user, eventId); // coordinators: own events only; board: all
       const event = ev.recordset[0];
 
       const q = (text: string) =>

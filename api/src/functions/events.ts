@@ -34,7 +34,7 @@ app.http("getEvent", {
   route: "events/{id}",
   handler: async (request: HttpRequest) => {
     try {
-      await requireUser(request);
+      const user = await requireUser(request);
       const id = request.params.id;
       const pool = await getPool();
       const ev = await pool
@@ -42,6 +42,10 @@ app.http("getEvent", {
         .input("id", sql.UniqueIdentifier, id)
         .query("SELECT * FROM dbo.Events WHERE id = @id");
       if (ev.recordset.length === 0) throw new HttpError(404, "Event not found");
+      // Unpublished (draft) events are coordinator/board-only — don't leak them.
+      if (ev.recordset[0].status !== "published" && !roleAtLeast(user.role, "eventCoordinator")) {
+        throw new HttpError(404, "Event not found");
+      }
       const items = await pool
         .request()
         .input("id", sql.UniqueIdentifier, id)

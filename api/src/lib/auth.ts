@@ -100,6 +100,26 @@ export function assertRole(user: User, min: Role): void {
   if (rank[user.role] < rank[min]) throw new HttpError(403, "Insufficient role");
 }
 
+/**
+ * Board members manage all events; a coordinator may only touch events they
+ * created or are assigned to (spec §2: coordinator = "own events", board = "all").
+ * Throws 403 otherwise. Caller has already passed assertRole(user, "eventCoordinator").
+ */
+export async function assertEventAccess(user: User, eventId: string): Promise<void> {
+  if (user.role === "boardMember") return;
+  const pool = await getPool();
+  const res = await pool
+    .request()
+    .input("eventId", sql.UniqueIdentifier, eventId)
+    .input("userId", sql.UniqueIdentifier, user.id)
+    .query(
+      `SELECT 1 FROM dbo.Events e
+       WHERE e.id = @eventId AND (e.createdBy = @userId
+         OR EXISTS (SELECT 1 FROM dbo.EventCoordinators c WHERE c.eventId = e.id AND c.userId = @userId))`
+    );
+  if (res.recordset.length === 0) throw new HttpError(403, "You don’t coordinate this event");
+}
+
 async function getOrCreateUser(providerSub: string, email: string, name?: string): Promise<User> {
   const pool = await getPool();
   const existing = await pool

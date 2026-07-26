@@ -1,5 +1,5 @@
 import { app, HttpRequest } from "@azure/functions";
-import { requireUser } from "../lib/auth";
+import { assertRole, requireUser } from "../lib/auth";
 import { getPool, sql } from "../lib/db";
 import { errorResponse, HttpError, json } from "../lib/http";
 import { bt, sourceFor } from "../lib/braintree";
@@ -11,7 +11,8 @@ app.http("braintreeClientToken", {
   route: "braintree/client-token",
   handler: async (request: HttpRequest) => {
     try {
-      await requireUser(request);
+      const user = await requireUser(request);
+      assertRole(user, "resident"); // active members only
       const result = await bt().clientToken.generate({});
       return json(200, { clientToken: result.clientToken });
     } catch (e) {
@@ -30,6 +31,7 @@ app.http("braintreeCheckout", {
   handler: async (request: HttpRequest) => {
     try {
       const user = await requireUser(request);
+      assertRole(user, "resident"); // active members only
       const body = (await request.json()) as {
         eventId: string;
         lines: Array<{ eventItemId: string; quantity: number }>;
