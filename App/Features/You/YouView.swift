@@ -6,10 +6,14 @@ import SwiftUI
 /// out. Built to match Design/prototype.html (data-screen="you").
 struct YouView: View {
     @Environment(AuthService.self) private var auth
+    @Environment(\.openURL) private var openURL
 
     @State private var showEditProfile = false
     @State private var showPayments = false
     @State private var showMembers = false
+    @State private var showDeleteConfirm = false
+    @State private var deleting = false
+    @State private var deleteError: String?
 
     private var user: APIUser? { auth.currentUser }
     private var isBoard: Bool { (user?.role ?? .resident) >= .boardMember }
@@ -45,10 +49,22 @@ struct YouView: View {
                 }
 
                 SettingsCard(rows: [
+                    YouRow(symbol: "hand.raised", title: "Privacy policy",
+                           subtitle: "How your data is used", accessory: .chevron,
+                           action: { openURL(Self.privacyURL) }),
                     YouRow(symbol: "trash", title: "Delete account",
                            subtitle: "Permanently remove your account and data",
-                           accessory: .chevron, destructive: true),
+                           accessory: .chevron, destructive: true,
+                           action: user != nil ? { showDeleteConfirm = true } : nil),
                 ])
+
+                if let deleteError {
+                    Text(deleteError)
+                        .font(FMW.ui(12.5, .semibold))
+                        .foregroundStyle(FMW.danger)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 22).padding(.top, 8)
+                }
 
                 SignOutButton { auth.signOut() }
                     .padding(.horizontal, 18)
@@ -64,6 +80,27 @@ struct YouView: View {
         }
         .sheet(isPresented: $showPayments) { PaymentInfoView() }
         .sheet(isPresented: $showMembers) { MembersAdminView() }
+        .alert("Delete account?", isPresented: $showDeleteConfirm) {
+            Button("Cancel", role: .cancel) {}
+            Button("Delete", role: .destructive) { Task { await deleteAccount() } }
+        } message: {
+            Text("This removes your name, email, phone, and address, and signs you out. This can’t be undone.")
+        }
+    }
+
+    private static var privacyURL: URL {
+        AppConfig.apiBaseURL.appendingPathComponent("privacy")
+    }
+
+    private func deleteAccount() async {
+        deleting = true
+        deleteError = nil
+        do {
+            try await auth.deleteAccount() // server anonymizes PII, then signs out
+        } catch {
+            deleteError = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription
+            deleting = false
+        }
     }
 }
 
@@ -235,6 +272,7 @@ private struct EditProfileView: View {
 
     @State private var name: String
     @State private var phone: String
+    @State private var emailVisible: Bool
     @State private var saving = false
     @State private var errorText: String?
 
@@ -242,6 +280,7 @@ private struct EditProfileView: View {
         self.user = user
         _name = State(initialValue: user.name)
         _phone = State(initialValue: user.phone ?? "")
+        _emailVisible = State(initialValue: user.emailVisibleToNeighbors ?? true)
     }
 
     private var trimmedName: String { name.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -254,8 +293,10 @@ private struct EditProfileView: View {
                     TextField("Phone (optional)", text: $phone).keyboardType(.phonePad).textContentType(.telephoneNumber)
                 }
                 if let email = user.email {
-                    Section("Sign-in email") {
+                    Section("Email") {
                         Text(email).foregroundStyle(FMW.muted)
+                        Toggle("Show my email to neighbors", isOn: $emailVisible)
+                            .tint(FMW.pine)
                     }
                 }
                 if let errorText {
@@ -280,7 +321,9 @@ private struct EditProfileView: View {
         let cleanPhone = phone.trimmingCharacters(in: .whitespacesAndNewlines)
         Task {
             do {
-                try await auth.updateProfile(name: trimmedName, phone: cleanPhone.isEmpty ? nil : cleanPhone)
+                try await auth.updateProfile(name: trimmedName,
+                                             phone: cleanPhone.isEmpty ? nil : cleanPhone,
+                                             emailVisibleToNeighbors: emailVisible)
                 dismiss()
             } catch {
                 errorText = (error as? LocalizedError)?.errorDescription ?? error.localizedDescription

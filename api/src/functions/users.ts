@@ -64,6 +64,38 @@ app.http("updateMe", {
   },
 });
 
+// POST /api/users/me/delete — in-app account deletion (App Store 5.1.1(v)). Removes
+// the member's personal data (name, email, phone, address link) and severs the
+// sign-in linkage so they can't log back into this account; financial records keep
+// referential integrity by pointing at the now-anonymized user.
+app.http("deleteMe", {
+  methods: ["POST", "DELETE"],
+  authLevel: "anonymous",
+  route: "users/me/delete",
+  handler: async (request: HttpRequest) => {
+    try {
+      const user = await requireUser(request);
+      const pool = await getPool();
+      await pool
+        .request()
+        .input("id", sql.UniqueIdentifier, user.id)
+        .input("sub", sql.NVarChar, `deleted:${user.id}`)
+        .input("email", sql.NVarChar, `deleted+${user.id}@removed.foxmillwoods.invalid`)
+        .query(
+          `UPDATE dbo.Users
+             SET name = 'Deleted member', email = @email, phone = NULL,
+                 authProviderSub = @sub, status = 'pending', role = 'resident',
+                 emailVisibleToNeighbors = 0, householdId = NULL
+           WHERE id = @id`
+        );
+      await audit(user.id, "user.deleteSelf", user.id, "account deleted (personal data anonymized)");
+      return json(200, { ok: true });
+    } catch (e) {
+      return errorResponse(e);
+    }
+  },
+});
+
 // POST /api/users/{id}/status  { "status": "active" | "pending" } — board activates
 // (approves/adds) or suspends (removes access for) a member. Suspended members drop
 // to 'pending', which fails the active-status gate on every protected action.

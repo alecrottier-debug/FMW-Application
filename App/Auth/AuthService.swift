@@ -77,13 +77,20 @@ final class AuthService {
         GIDSignIn.sharedInstance.signOut()
     }
 
-    /// Update the signed-in member's own account details (name, phone). Refreshes currentUser.
-    func updateProfile(name: String, phone: String?) async throws {
+    /// Update the signed-in member's own account details. Refreshes currentUser.
+    func updateProfile(name: String, phone: String?, emailVisibleToNeighbors: Bool) async throws {
         let updated: APIUser = try await api.post(
             "users/me",
-            body: UpdateProfileRequest(name: name, phone: phone)
+            body: UpdateProfileRequest(name: name, phone: phone, emailVisibleToNeighbors: emailVisibleToNeighbors)
         )
         currentUser = updated
+    }
+
+    /// In-app account deletion (App Store 5.1.1(v)): the server anonymizes the
+    /// member's personal data and severs sign-in; then we sign out locally.
+    func deleteAccount() async throws {
+        let _: DeleteAccountResponse = try await api.post("users/me/delete", body: EmptyBody())
+        signOut()
     }
 
     // MARK: - Session exchange
@@ -149,7 +156,11 @@ struct SessionResponse: Decodable {
 struct UpdateProfileRequest: Encodable, Sendable {
     let name: String
     let phone: String?
+    let emailVisibleToNeighbors: Bool
 }
+
+struct EmptyBody: Encodable, Sendable {}
+struct DeleteAccountResponse: Decodable { let ok: Bool }
 
 /// Bridges ASAuthorizationController's delegate callbacks to an async continuation.
 final class AppleSignInCoordinator: NSObject, ASAuthorizationControllerDelegate,
