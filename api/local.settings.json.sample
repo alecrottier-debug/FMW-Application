@@ -1,0 +1,22 @@
+{
+  "IsEncrypted": false,
+  "Values": {
+    "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+    "FUNCTIONS_WORKER_RUNTIME": "node",
+    "AzureWebJobsFeatureFlags": "EnableWorkerIndexing",
+
+    "SQL_CONNECTION_STRING": "Server=localhost,1433;Database=foxmillwoods;User Id=sa;Password=Your_password123;Encrypt=true;TrustServerCertificate=true",
+
+    "APP_JWT_SECRET": "dev-only-change-me-to-a-long-random-string",
+    "APPLE_BUNDLE_ID": "com.foxmillwoods.app",
+    "GOOGLE_CLIENT_ID": "<ios-oauth-client-id>.apps.googleusercontent.com",
+
+    "BRAINTREE_ENVIRONMENT": "sandbox",
+    "BRAINTREE_MERCHANT_ID": "<sandbox-merchant-id>",
+    "BRAINTREE_PUBLIC_KEY": "<sandbox-public-key>",
+    "BRAINTREE_PRIVATE_KEY": "<sandbox-private-key>",
+
+    "STRIPE_SECRET_KEY": "sk_test_xxx",
+    "STRIPE_WEBHOOK_SECRET": "whsec_xxx"
+  }
+}
