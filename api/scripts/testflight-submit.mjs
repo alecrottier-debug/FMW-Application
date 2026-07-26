@@ -81,26 +81,28 @@ if (en) {
 
 // 4) Beta App Localization (Beta App Description + feedback email) — required for external.
 const FEEDBACK_EMAIL = process.env.ASC_FEEDBACK_EMAIL || "alec.rottier@gmail.com";
+const PRIVACY_URL = process.env.ASC_PRIVACY_URL ||
+  "https://func-ndps736gp4ayg.azurewebsites.net/api/privacy";
 const DESCRIPTION =
   "Fox Mill Woods is a private app for the Fox Mill Woods neighborhood — events, " +
   "pavilion rentals, annual dues, and a member directory. This beta is for neighborhood " +
   "coordinators to try publishing events, scanning receipts, and the money dashboard.";
 {
+  const attributes = { feedbackEmail: FEEDBACK_EMAIL, description: DESCRIPTION, privacyPolicyUrl: PRIVACY_URL };
   const bloc = await api("GET", `/v1/apps/${APP_ID}/betaAppLocalizations`);
   const en2 = (bloc.data || []).find((l) => l.attributes?.locale === "en-US");
   if (en2) {
     await api("PATCH", `/v1/betaAppLocalizations/${en2.id}`, {
-      data: { type: "betaAppLocalizations", id: en2.id,
-        attributes: { feedbackEmail: FEEDBACK_EMAIL, description: DESCRIPTION } },
+      data: { type: "betaAppLocalizations", id: en2.id, attributes },
     });
-    console.log("updated beta app localization");
+    console.log("updated beta app localization (+ privacy policy URL)");
   } else {
     await api("POST", `/v1/betaAppLocalizations`, {
       data: { type: "betaAppLocalizations",
-        attributes: { locale: "en-US", feedbackEmail: FEEDBACK_EMAIL, description: DESCRIPTION },
+        attributes: { locale: "en-US", ...attributes },
         relationships: { app: { data: { type: "apps", id: APP_ID } } } },
     });
-    console.log("created beta app localization");
+    console.log("created beta app localization (+ privacy policy URL)");
   }
 }
 
