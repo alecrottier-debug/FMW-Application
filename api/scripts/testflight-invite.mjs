@@ -87,10 +87,15 @@ for (const t of testers) {
       const found = await api("GET", `/v1/betaTesters?filter[email]=${encodeURIComponent(t.email)}`);
       const id = found.data?.[0]?.id;
       if (id) {
-        await api("POST", `/v1/betaGroups/${groupId}/relationships/betaTesters`, {
-          data: [{ type: "betaTesters", id }],
-        });
-        console.log(`already existed — added to group: ${t.email}`);
+        try {
+          await api("POST", `/v1/betaGroups/${groupId}/relationships/betaTesters`, {
+            data: [{ type: "betaTesters", id }],
+          });
+          console.log(`already existed — added to group: ${t.email}`);
+        } catch (e2) {
+          if (e2.status === 409) console.log(`already in group: ${t.email}`);
+          else throw e2;
+        }
       } else {
         console.log(`could not resolve existing tester: ${t.email}`);
       }
